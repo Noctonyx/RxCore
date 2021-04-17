@@ -3,20 +3,20 @@ cmake_minimum_required(VERSION 3.15)
 find_package(Vulkan REQUIRED)
 
 add_library(RxCore STATIC 
-        "src/Vulkan/Device.cpp"
-        "src/Vulkan/Device.h"
-        "src/Vulkan/Instance.cpp"
-        "src/Vulkan/Instance.hpp"
-        "src/Vulkan/PhysicalDevice.cpp"
-        "src/Vulkan/PhysicalDevice.hpp"
-        "src/Vulkan/Surface.cpp"
-        "src/Vulkan/Surface.hpp"
-        "src/Vulkan/SwapChain.cpp"
-        "src/Vulkan/SwapChain.hpp"
-        "src/Vulkan/PipelineBuilder.cpp"
-        "src/Vulkan/PipelineBuilder.hpp"
-        "src/Vulkan/CommandBuffer.cpp"
-        "src/Vulkan/CommandBuffer.hpp"
+        src/Vulkan/Device.cpp
+        src/Vulkan/Device.h
+        src/Vulkan/Instance.cpp
+        src/Vulkan/Instance.hpp
+        src/Vulkan/PhysicalDevice.cpp
+        src/Vulkan/PhysicalDevice.hpp
+        src/Vulkan/Surface.cpp
+        src/Vulkan/Surface.hpp
+        src/Vulkan/SwapChain.cpp
+        src/Vulkan/SwapChain.hpp
+        src/Vulkan/PipelineBuilder.cpp
+        src/Vulkan/PipelineBuilder.hpp
+        src/Vulkan/CommandBuffer.cpp
+        src/Vulkan/CommandBuffer.hpp
         src/Vulkan/Vulk.hpp
         src/Vulkan/Buffer.cpp
         src/Vulkan/Buffer.hpp
@@ -84,8 +84,10 @@ endif ()
 #target_compile_options(RxCore PUBLIC -DSPDLOG_ACTIVE_LEVEL=0)
 target_compile_options(RxCore PUBLIC -DVULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 target_include_directories(RxCore PUBLIC "src")
+target_include_directories(RxCore INTERFACE "include")
 target_include_directories(RxCore PUBLIC ${Vulkan_INCLUDE_DIR})
 target_link_libraries(RxCore PUBLIC ${Vulkan_LIBRARY})
 target_link_libraries(RxCore PUBLIC glfw)
-target_link_libraries(RxCore PUBLIC RXUtil)
+target_link_libraries(RxCore PUBLIC RxUtil)
+
 set_target_properties(RxCore PROPERTIES CXX_STANDARD 20)
