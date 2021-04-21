@@ -14,7 +14,7 @@ namespace RxCore
 
         RX_NO_COPY_NO_MOVE(Pipeline);
 
-        ~Pipeline()()
+        ~Pipeline()
         {
             Device::VkDevice().destroyPipeline(handle_);
         }
