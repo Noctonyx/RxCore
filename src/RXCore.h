@@ -16,6 +16,7 @@
 #include "Vulkan/Surface.hpp"
 #include "Vulkan/Pipeline.h"
 #include "Vulkan/CommandBuffer.hpp"
+#include "Vulkan/Shader.h"
 
 #include "Jobs/JobManager.hpp"
 
