@@ -670,21 +670,16 @@ namespace RxCore
             VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, size,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT
         };
-        // bufferInfo.size = size;
-        // bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
         VmaAllocationCreateInfo alloc_info{0, VMA_MEMORY_USAGE_CPU_ONLY};
-        // allocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-        //;;allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-        VkBuffer b1;
+        VkBuffer buffer_handle;
         VmaAllocation allocation;
-        // VmaAllocationInfo ainfo;
 
-        vmaCreateBuffer(allocator, &buffer_info, &alloc_info, &b1, &allocation, nullptr);
+        vmaCreateBuffer(allocator, &buffer_info, &alloc_info, &buffer_handle, &allocation, nullptr);
+
         auto all = std::make_shared<Allocation>(allocator, allocation);
-
-        auto buf = std::make_shared<Buffer>(handle_, b1, all, size);
+        auto buf = std::make_shared<Buffer>(handle_, buffer_handle, all, size);
         all->map();
         all->update(data, size);
         all->unmap();
