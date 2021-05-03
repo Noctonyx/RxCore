@@ -50,5 +50,17 @@ namespace RxCore
         std::unordered_map<RxUtil::Hash, DescriptorPoolGroup> descriptorSetPoolGroups;
         std::string threadId;
     };
+
+    extern thread_local ThreadResources threadResources;
+
+    inline void freeThreadResources()
+    {
+        threadResources.freeUnused();
+    }
+
+    inline void freeAllThreadResource()
+    {
+        threadResources.freeAllResources();
+    }
 }
 #endif //RX_THREADRESOURCES_H

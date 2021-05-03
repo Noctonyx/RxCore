@@ -5,26 +5,17 @@
 #pragma once
 
 #include <iostream>
-#include <fstream>
 #include <cstdint>
 #include <thread>
 #include <vector>
 #include <atomic>
 #include <queue>
 #include <functional>
-#include <cassert>
-#include <Pooler.h>
-#include <Vulkan/DescriptorSet.hpp>
-//#include "Vulkan/RenderData.h"
 #include "optick/optick.h"
 #include "Log.h"
-#include "ThreadResources.h"
 
 namespace RxCore
 {
-    class CommandPool;
-    class SecondaryCommandBuffer;
-
     struct JobBase : public std::enable_shared_from_this<JobBase>
     {
         std::atomic_uint16_t childCount;
@@ -37,7 +28,7 @@ namespace RxCore
             followOns.clear();
             //followedJob.reset();
             parent.reset();
-        };
+        }
 
         JobBase(const JobBase & other) = delete;
 
@@ -78,7 +69,7 @@ namespace RxCore
         void schedule(std::shared_ptr<JobBase> parentJob, bool background = false);
     };
 
-    template<typename T>
+    template <typename T>
     struct Job final : JobBase
     {
         std::function<T(void)> f;
@@ -95,7 +86,7 @@ namespace RxCore
         }
     };
 
-    template<>
+    template <>
     struct Job<void> final : JobBase
     {
         std::function<void(void)> f;
@@ -110,7 +101,7 @@ namespace RxCore
         }
     };
 
-    template<typename T, typename F>
+    template <typename T, typename F>
     std::shared_ptr<Job<T>> CreateJob(F f)
     {
         return std::make_shared<Job<T>>(f);
@@ -170,7 +161,9 @@ namespace RxCore
     public:
         static inline thread_local uint16_t threadId;
         static inline thread_local std::shared_ptr<JobBase> currentJob = nullptr;
-        static inline thread_local ThreadResources resources;
+
+        std::function<void()> freeResourcesFunction;
+        std::function<void()> freeAllResourcesFunction;
 
         std::atomic<uint16_t> threadCount_ = 0;
         std::atomic<bool> terminated_;
@@ -189,25 +182,15 @@ namespace RxCore
             return instance;
         }
 
-        static ThreadResources & threadData() {
-            return resources;
-        }
-
-        //static std::shared_ptr<SecondaryCommandBuffer> getCommandBuffer(const RenderStage & stage);
-        //static std::shared_ptr<RXUtil::Pooler<RXCore::DescriptorSet>> getSetPoooler(uint32_t id);
-        //static void setSetPooler(uint32_t id, std::shared_ptr<RXUtil::Pooler<RXCore::DescriptorSet>> setPooler);
-
-        //static void freeUnusedBuffers();
-
         JobManager();
 
-        template<typename T, typename F>
+        template <typename T, typename F>
         static auto CreateJob(F f)
         {
             return std::make_shared<Job<T>>(f);
         }
 
-        template<typename T, typename F>
+        template <typename T, typename F>
         static auto Schedule(F f)
         {
             return instance().Schedule(std::make_shared<Job<T>>(f));
@@ -215,7 +198,7 @@ namespace RxCore
 
         void JobTask(const uint16_t index)
         {
-            OPTICK_THREAD("Worker Thread");
+            OPTICK_THREAD("Worker Thread")
 
             threadId = index;
             ++threadStartedCount_;
@@ -225,7 +208,7 @@ namespace RxCore
             while (!shutdown_.load()) {
                 auto job = queue_->pop();
                 if (cleans[index]) {
-                    resources.freeUnused();
+                    freeResourcesFunction();
                     cleans[index] = false;
                 }
                 if (!job) {
@@ -261,12 +244,9 @@ namespace RxCore
                     }
                 }
             }
-            //if (pool) {
-                spdlog::debug("Resetting pool");
-                //pool.reset();
-                resources.freeAllResources();
-            //}
-            //buffers.clear();
+            spdlog::debug("Resetting pool");
+            freeAllResourcesFunction();
+
             const uint32_t num = threadCount_.fetch_sub(1);
             if (num == 1) {
                 spdlog::info("Last thread cleaning up");
@@ -283,13 +263,11 @@ namespace RxCore
             queue_->condVar.notify_all();
             spdlog::info("All notified");
             terminated_.wait(false);
-            //spdlog::info("About to reset pool");
-            //pool.reset();
-            resources.freeAllResources();
+            freeAllResourcesFunction();
             spdlog::info("Main thread Pool Reset");
         }
 
-        template<typename T>
+        template <typename T>
         T Schedule(T job, bool background = false)
         {
             if (currentJob) {
@@ -299,7 +277,7 @@ namespace RxCore
             return job;
         }
 
-        template<typename T, typename U>
+        template <typename T, typename U>
         T Schedule(T job, U parent, bool background = false)
         {
             job->parent = std::move(parent);

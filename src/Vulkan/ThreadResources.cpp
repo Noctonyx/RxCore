@@ -12,6 +12,8 @@
 
 namespace RxCore
 {
+    thread_local ThreadResources threadResources;
+
     void ThreadResources::freeAllResources()
     {
         descriptorSetPoolGroups.clear();

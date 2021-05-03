@@ -50,8 +50,8 @@ add_library(RxCore STATIC
         src/Vulkan/Allocation.cpp
         src/Vulkan/Allocation.h
         src/Vulkan/IPipelineLayout.h
-        src/Jobs/ThreadResources.cpp
-        src/Jobs/ThreadResources.h 
+        src/Vulkan/ThreadResources.cpp
+        src/Vulkan/ThreadResources.h
         src/Vulkan/Pipeline.h)
 
 #target_compile_features(RxCore PUBLIC cxx_std_20)
