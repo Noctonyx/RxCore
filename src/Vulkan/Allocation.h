@@ -45,9 +45,9 @@ namespace RxCore
             (void) memcpy(static_cast<uint8_t *>(mappedPtr_) + offset, data, size);
         }
 
-        std::byte * getPtr()
+        void * getPtr()
         {
-            return reinterpret_cast<std::byte *>( mappedPtr_);
+            return mappedPtr_;
         }
 
     private:

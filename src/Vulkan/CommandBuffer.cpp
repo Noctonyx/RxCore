@@ -106,12 +106,12 @@ namespace RxCore
         handle_.pushConstants(currentLayout_, shaderFlags, offset, size, ptr);
     }
 
-    void CommandBuffer::BindPipeline(vk::Pipeline pipeline)
+    void CommandBuffer::bindPipeline(vk::Pipeline pipeline)
     {
         handle_.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
     }
 
-    void CommandBuffer::BindVertexBuffer(std::shared_ptr<Buffer> buffer)
+    void CommandBuffer::bindVertexBuffer(std::shared_ptr<Buffer> buffer)
     {
         handle_.bindVertexBuffers(0, {buffer->handle()}, {0});
         buffers_.emplace(std::move(buffer));
@@ -127,7 +127,7 @@ namespace RxCore
         handle_.drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     }
 
-    void CommandBuffer::BindIndexBuffer(std::shared_ptr<IndexBuffer> buffer, uint64_t offset)
+    void CommandBuffer::bindIndexBuffer(std::shared_ptr<IndexBuffer> buffer, uint64_t offset)
     {
         if (buffer->is16Bit_) {
             handle_.bindIndexBuffer(buffer->handle(), offset, vk::IndexType::eUint16);
@@ -215,6 +215,11 @@ namespace RxCore
                 return b->Handle();
             });
         handle_.executeCommands(bufs);
+    }
+
+    void PrimaryCommandBuffer::executeSecondary(const std::shared_ptr<SecondaryCommandBuffer> & secondary) {
+        handle_.executeCommands({ secondary->Handle() });
+        secondaries2_.push_back(secondary);
     }
 
     void PrimaryCommandBuffer::addSecondaryBuffer(

@@ -56,7 +56,6 @@ namespace RxCore
             float maxDepth) const;
 
         void setScissor(vk::Rect2D rect) const;
-
         void clearScissor() const;
 
         vk::ImageMemoryBarrier ImageBarrier(
@@ -75,11 +74,9 @@ namespace RxCore
             vk::AccessFlags destAccessMask,
             vk::ImageLayout newLayout);
 
-        void BindPipeline(vk::Pipeline pipeline);
-
-        void BindVertexBuffer(std::shared_ptr<Buffer> buffer);
-
-        void BindIndexBuffer(std::shared_ptr<IndexBuffer> buffer, uint64_t offset = 0);
+        void bindPipeline(vk::Pipeline pipeline);
+        void bindVertexBuffer(std::shared_ptr<Buffer> buffer);
+        void bindIndexBuffer(std::shared_ptr<IndexBuffer> buffer, uint64_t offset = 0);
 
         void DrawIndexed(
             uint32_t indexCount,
@@ -114,8 +111,15 @@ namespace RxCore
             const void * ptr) const;
 
         //operator vk::CommandBuffer() const { return handle_; };
-        [[nodiscard]] vk::CommandBuffer Handle() const { return handle_; }
-        [[nodiscard]] bool wasStarted() const { return started_; }
+        [[nodiscard]] vk::CommandBuffer Handle() const
+        {
+            return handle_;
+        }
+
+        [[nodiscard]] bool wasStarted() const
+        {
+            return started_;
+        }
 
     protected:
         vk::CommandBuffer handle_;
@@ -129,22 +133,31 @@ namespace RxCore
         vk::PipelineLayout currentLayout_;
     };
 
-    class PrimaryCommandBuffer : public CommandBuffer
+    class PrimaryCommandBuffer final : public CommandBuffer
     {
     public:
         PrimaryCommandBuffer(const vk::CommandBuffer & handle, std::shared_ptr<CommandPool> pool)
             : CommandBuffer(handle, std::move(pool)) {}
 
+        ~PrimaryCommandBuffer() override
+        {
+            secondaries2_.clear();
+            secondaries_.clear();
+        }
+
         RX_NO_COPY_NO_MOVE(PrimaryCommandBuffer)
 
-        void addSecondaryBuffer(std::shared_ptr<SecondaryCommandBuffer> secondary, uint16_t sequence);
+        void addSecondaryBuffer(std::shared_ptr<SecondaryCommandBuffer> secondary,
+                                uint16_t sequence);
         void executeSecondaries(uint16_t sequence);
+        void executeSecondary(const std::shared_ptr<SecondaryCommandBuffer> & secondary);
 
     protected:
         std::map<uint16_t, std::vector<std::shared_ptr<SecondaryCommandBuffer>>> secondaries_;
+        std::vector<std::shared_ptr<SecondaryCommandBuffer>> secondaries2_;
     };
 
-    class TransferCommandBuffer : public CommandBuffer
+    class TransferCommandBuffer final : public CommandBuffer
     {
     public:
         TransferCommandBuffer(const vk::CommandBuffer & handle, std::shared_ptr<CommandPool> pool)
@@ -164,9 +177,12 @@ namespace RxCore
             std::shared_ptr<Image> dest,
             vk::Extent3D extent,
             uint32_t layerCount,
-            uint32_t baseArrayLayer, uint32_t mipLevel);
+            uint32_t baseArrayLayer,
+            uint32_t mipLevel);
 
-        void imageTransition(std::shared_ptr<Image> dest, vk::ImageLayout destLayout, uint32_t mipLevel = 0);
+        void imageTransition(std::shared_ptr<Image> dest,
+                             vk::ImageLayout destLayout,
+                             uint32_t mipLevel = 0);
 
         void submitAndWait();
 

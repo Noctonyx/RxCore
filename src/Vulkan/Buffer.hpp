@@ -25,9 +25,34 @@ namespace RxCore
             return handle_;
         }
 
-        [[nodiscard]] const std::shared_ptr<Allocation> & getMemory() const;
+        //[[nodiscard]] const std::shared_ptr<Allocation> & getMemory() const;
         [[nodiscard]] vk::DeviceSize getSize() const;
 
+        void map()
+        {
+            allocation_->map();
+        }
+
+        void unmap()
+        {
+            allocation_->unmap();
+        }
+
+        void update(const void* data, vk::DeviceSize size) const
+        {
+            allocation_->update(data, size);
+        }
+
+        void update(const void* data, vk::DeviceSize offset, vk::DeviceSize size) const
+        {
+            allocation_->update(data, offset, size);
+        }
+
+        void * getPtr()
+        {
+            return allocation_->getPtr();
+        }
+        
     private:
         const vk::Buffer handle_ = nullptr;
         vk::DeviceSize size_ = 0;

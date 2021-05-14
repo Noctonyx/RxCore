@@ -23,9 +23,4 @@ namespace RxCore
     {
         return size_;
     }
-
-    const std::shared_ptr<Allocation> & Buffer::getMemory() const
-    {
-        return allocation_;
-    }
-} // namespace RXCore
+}
