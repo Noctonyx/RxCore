@@ -51,7 +51,7 @@ namespace RxCore
         } else {
             offsets_[binding] = std::nullopt;
         }
-        Device::VkDevice().updateDescriptorSets(
+        device_.updateDescriptorSets(
             static_cast<uint32_t>(wds.size()),
             wds.data(),
             0,
