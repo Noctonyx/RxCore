@@ -6,7 +6,6 @@
 
 #include <iostream>
 #include <cstdint>
-#include <thread>
 #include <vector>
 #include <atomic>
 #include <queue>
