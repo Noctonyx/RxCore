@@ -46,7 +46,7 @@ namespace RxCore
 #endif
         ::VkSurfaceKHR surface_khr;
         // vk::Win32SurfaceCreateInfoKHR
-        if (glfwCreateWindowSurface((VkInstance) instance->GetHandle(), window, nullptr,
+        if (glfwCreateWindowSurface(static_cast<VkInstance>(instance->GetHandle()), window, nullptr,
                                     &surface_khr) != VK_SUCCESS) {
             spdlog::critical("Failed to created the window surface!");
         }
