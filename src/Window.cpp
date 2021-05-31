@@ -180,6 +180,11 @@ namespace RxCore
         return height;
     }
 
+    void Window::setMouseVisible(bool visible)
+    {
+        
+    }
+
     void Window::setRelativeMouseMode(bool mode)
     {
         SDL_SetRelativeMouseMode(mode ? SDL_TRUE : SDL_FALSE);
@@ -298,9 +303,15 @@ namespace RxCore
             return;
         }
         SDL_ShowCursor(hidden ? SDL_DISABLE : SDL_ENABLE);
+        SDL_SetRelativeMouseMode(hidden ? SDL_TRUE : SDL_FALSE);
 
         if (!hidden) {
             setCursorPosition(static_cast<int32_t>(cursorX), static_cast<int32_t>(cursorY));
+        } else {
+            int x, y;
+            SDL_GetMouseState(&x, &y);
+            cursorX = static_cast<float>(x);
+            cursorY = static_cast<float>(y);
         }
         hidden_ = hidden;
     }

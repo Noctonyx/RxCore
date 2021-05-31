@@ -51,7 +51,7 @@ namespace RxCore
 
         //[[nodiscard]] bool shouldClose() const;
 
-        //void setMouseVisible(bool visible);
+        void setMouseVisible(bool visible);
         void setRelativeMouseMode(bool mode);
 
         [[nodiscard]] bool getMouseVisible() const;
