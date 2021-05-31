@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 
+#include "SDL_video.h"
+
 namespace RxCore
 {
     class Device;
@@ -12,16 +14,16 @@ namespace RxCore
     class Instance
     {
     public:
-        explicit Instance(Device * context);
+        explicit Instance(Device * context, SDL_Window* window);
 
         ~Instance();
 
-        void CreateInstance();
+        void CreateInstance(SDL_Window* window);
 
         void EnableDebugMessages();
         //void DisableDebugMessages();
 
-        std::vector<const char *> GetInstanceExtensions();
+        std::vector<const char *> GetInstanceExtensions(SDL_Window * window);
 
         const vk::Instance & GetHandle() const
         {
@@ -58,7 +60,7 @@ namespace RxCore
         vk::Instance Handle;
         const Device* Context;
 
-        const std::vector<const char *> instanceExtensions_ =
+        std::vector<const char *> instanceExtensions_ =
         {
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,

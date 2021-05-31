@@ -2,20 +2,21 @@
 //#include "vk_mem_alloc.hpp"
 
 #include "Instance.hpp"
-#include <GLFW/glfw3.h>
+//#include <GLFW/glfw3.h>
 #include <vector>
 #include <memory>
 #include "Log.h"
 #include "spdlog/spdlog.h"
+#include "SDL_vulkan.h"
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 namespace RxCore
 {
-    Instance::Instance(Device * context)
+    Instance::Instance(Device * context,SDL_Window* window)
         : Context(context)
     {
-        CreateInstance();
+        CreateInstance(window);
     }
 
     Instance::~Instance()
@@ -23,7 +24,7 @@ namespace RxCore
         Handle.destroyDebugUtilsMessengerEXT(debugMessenger_);
     }
 
-    void Instance::CreateInstance()
+    void Instance::CreateInstance(SDL_Window * window)
     {
         vk::DynamicLoader dl;
         PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
@@ -38,7 +39,7 @@ namespace RxCore
             VK_MAKE_VERSION(0, 0, 1),
             VK_API_VERSION_1_2
         };
-        enabledExtensions_ = GetInstanceExtensions();
+        enabledExtensions_ = GetInstanceExtensions(window);
         //m_EnabledLayers.push_back("VK_LAYER_KHRONOS_validation");
         const std::vector<const char *> list_layers =
             {
@@ -81,16 +82,24 @@ namespace RxCore
 
     }
 
-    std::vector<const char *> Instance::GetInstanceExtensions()
+    std::vector<const char *> Instance::GetInstanceExtensions(SDL_Window * window)
     {
-        uint32_t count = 0;
-        const char ** extensions = glfwGetRequiredInstanceExtensions(&count);
-        std::vector<const char *> list(extensions, extensions + count);
+        //uint32_t count = 0;
+        uint32_t count;
+        std::vector<const char*> names;
 
-        list.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        SDL_Vulkan_GetInstanceExtensions(window, &count, nullptr);
+        names.resize(count);
+        SDL_Vulkan_GetInstanceExtensions(window, &count, names.data());
 
+        //const char ** extensions = glfwGetRequiredInstanceExtensions(&count);
+        //std::vector<const char *> list(extensions, extensions + count);
+
+        //list.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+        std::copy(names.begin(), names.end(), std::back_inserter(instanceExtensions_));
+        //instanceExtensions_.insert(instanceExtensions_.end(), names.begin(), names.end());
         return instanceExtensions_;
-       // return list;
     }
 
     VkBool32 Instance::DebugCallback(

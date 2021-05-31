@@ -52,7 +52,10 @@ add_library(RxCore STATIC
         src/Vulkan/IPipelineLayout.h
         src/Vulkan/ThreadResources.cpp
         src/Vulkan/ThreadResources.h
-        src/Vulkan/Pipeline.h)
+        src/Vulkan/Pipeline.h 
+        src/Window.cpp
+        src/Window.hpp
+     "src/Events.h" "src/Events.cpp")
 
 #target_compile_features(RxCore PUBLIC cxx_std_20)
 target_compile_options(RxCore PUBLIC -DNOMINMAX)
@@ -87,7 +90,8 @@ target_include_directories(RxCore PUBLIC "src")
 target_include_directories(RxCore INTERFACE "include")
 target_include_directories(RxCore PUBLIC ${Vulkan_INCLUDE_DIR})
 target_link_libraries(RxCore PUBLIC ${Vulkan_LIBRARY})
-target_link_libraries(RxCore PUBLIC glfw)
+#target_link_libraries(RxCore PUBLIC glfw)
 target_link_libraries(RxCore PUBLIC RxUtil)
+target_link_libraries(RxCore PUBLIC sdl2)
 
 set_target_properties(RxCore PROPERTIES CXX_STANDARD 20)
