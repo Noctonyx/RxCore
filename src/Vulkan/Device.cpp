@@ -15,14 +15,15 @@
 #include <Hasher.h>
 #include "Log.h"
 #include "optick/optick.h"
+#include "SDL_vulkan.h"
 
 namespace RxCore
 {
     Device * Device::context_ = nullptr;
 
-    Device::Device(GLFWwindow * window)
+    Device::Device(SDL_Window * window)
     {
-        instance = std::make_unique<Instance>(this);
+        instance = std::make_unique<Instance>(this, window);
         physicalDevice = std::make_shared<PhysicalDevice>(this);
         createDevice();
 #if 1
@@ -46,8 +47,9 @@ namespace RxCore
 #endif
         ::VkSurfaceKHR surface_khr;
         // vk::Win32SurfaceCreateInfoKHR
-        if (glfwCreateWindowSurface(static_cast<VkInstance>(instance->GetHandle()), window, nullptr,
-                                    &surface_khr) != VK_SUCCESS) {
+        if(!SDL_Vulkan_CreateSurface(window, static_cast<VkInstance>(instance->GetHandle()), &surface_khr)) {
+        //if (glfwCreateWindowSurface(static_cast<VkInstance>(instance->GetHandle()), window, nullptr,
+          //                          &surface_khr) != VK_SUCCESS) {
             spdlog::critical("Failed to created the window surface!");
         }
         Device::context_ = this;

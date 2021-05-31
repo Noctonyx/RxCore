@@ -4,7 +4,8 @@
 #include <unordered_map>
 #include "Vulk.hpp"
 #include "Memory.h"
-#include <GLFW/glfw3.h>
+#include "SDL.h"
+//#include <GLFW/glfw3.h>
 #include "Hasher.h"
 
 namespace RxCore
@@ -34,7 +35,7 @@ namespace RxCore
         static Device * context_;
 
     public:
-        Device(GLFWwindow * window);
+        Device(SDL_Window * window);
 
         Device(const Device & other) = delete;
         Device & operator=(const Device & other) = delete;
