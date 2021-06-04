@@ -34,8 +34,8 @@ namespace RxCore
             vk::DescriptorSetLayout layout,
             const std::vector<uint32_t> & counts);
 
-        std::shared_ptr<RxUtil::Pooler<RxCore::DescriptorSet>> getSetPoooler(uint32_t id);
-        void setSetPooler(uint32_t id, std::shared_ptr<RxUtil::Pooler<RxCore::DescriptorSet>> setPooler);
+        //std::shared_ptr<RxUtil::Pooler<RxCore::DescriptorSet>> getSetPoooler(uint32_t id);
+        //void setSetPooler(uint32_t id, std::shared_ptr<RxUtil::Pooler<RxCore::DescriptorSet>> setPooler);
 
         //void registerDescriptorPool(uint32_t id, const std::vector<vk::DescriptorPoolSize> & poolSizes, uint32_t max);
         //void unregisterDescriptorPool(uint32_t id);
