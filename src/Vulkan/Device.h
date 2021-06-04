@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <RxCore.h>
 #include "Vulk.hpp"
 #include "Memory.h"
 #include "SDL.h"
@@ -135,7 +136,7 @@ namespace RxCore
             const vk::MemoryPropertyFlags memFlags,
             const vk::MemoryRequirements & memReq) const;
 #endif
-        void getMemBudget(std::vector<MemHeapStatus> & heaps) const;
+        void getMemBudget(std::vector<RxApi::MemHeapStatus> & heaps) const;
         // =----  Creating objects
 
         vk::Sampler createSampler(const vk::SamplerCreateInfo & sci);

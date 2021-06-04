@@ -1,8 +1,14 @@
 #pragma once
 
+#include <vector>
+#include <deque>
 #include <memory>
 #include <optick/optick.h>
 #include <Hasher.h>
+
+namespace RxCore {
+    class RxDevice;
+}
 
 namespace RxApi
 {
@@ -17,6 +23,7 @@ namespace RxApi
     class IndexBuffer;
     class CommandBuffer;
     class SecondaryCommandBuffer;
+    class DescriptorPool;
     class DescriptorSet;
     class Image;
     class ImageView;
@@ -26,6 +33,8 @@ namespace RxApi
     class Shader;
     class Surface;
     class SwapChain;
+
+    struct MemHeapStatus;
 
     using DevicePtr = Device *;
     using WindowPtr = Window *;
@@ -39,6 +48,7 @@ namespace RxApi
     using CommandBufferPtr = std::shared_ptr<CommandBuffer>;
     using SecondaryCommandBufferPtr = std::shared_ptr<SecondaryCommandBuffer>;
     using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
+    using DescriptorPoolPtr = std::shared_ptr<DescriptorPool>;
     using ImagePtr = std::shared_ptr<Image>;
     using ImageViewPtr = std::shared_ptr<ImageView>;
     using FrameBufferPtr = std::shared_ptr<FrameBuffer>;
@@ -79,6 +89,11 @@ namespace RxApi
         virtual BufferPtr createBuffer(BufferLocation location, size_t size) = 0;
 
         virtual SurfacePtr getSurface() const = 0;
+
+        virtual void getMemBudget(std::vector<MemHeapStatus> & heaps) const = 0;
+
+    private:
+        std::unique_ptr<RxCore::RxDevice> pImpl;
     };
 
     class Buffer
@@ -164,6 +179,8 @@ namespace RxApi
         Extent extent;
     };
 
+    using DeviceAddress = uint64_t;
+
     class Image
     {
     public:
@@ -186,6 +203,10 @@ namespace RxApi
     {
     public:
         ~SecondaryCommandBuffer() override = default;
+    };
+
+    class DescriptorPool {
+    public:
     };
 
     class DescriptorSet
@@ -311,29 +332,11 @@ namespace RxApi
     {
         SecondaryCommandBufferPtr getCommandBuffer();
 
-        DescriptorSetPtr getDescriptorSet(
-            const DescriptorPoolTemplate & poolTemplate,
-            DescriptorSetLayout layout);
-
-        DescriptorSetPtr getDescriptorSet(
-            const DescriptorPoolTemplate & poolTemplate,
-            DescriptorSetLayout layout,
-            const std::vector<uint32_t> & counts);
-#if 0
-        std::shared_ptr<RxUtil::Pooler<RxCore::DescriptorSet>> getSetPoooler(uint32_t id);
-        void setSetPooler(uint32_t id, std::shared_ptr<RxUtil::Pooler<RxCore::DescriptorSet>> setPooler);
-#endif
-        //void registerDescriptorPool(uint32_t id, const std::vector<vk::DescriptorPoolSize> & poolSizes, uint32_t max);
-        //void unregisterDescriptorPool(uint32_t id);
-
         void freeAllResources();
         void freeUnused();
 
         std::shared_ptr<CommandPool> pool;
         std::deque<std::shared_ptr<SecondaryCommandBuffer>> buffers;
-        //std::unordered_map<uint32_t, std::shared_ptr<RXUtil::Pooler<RXCore::DescriptorSet>>> setPoolers;
-        //std::unordered_map<uint32_t, std::shared_ptr<DescriptorPool>> descriptorSetPools;
-        std::unordered_map<RxUtil::Hash, DescriptorPoolGroup> descriptorSetPoolGroups;
         std::string threadId;
     };
 

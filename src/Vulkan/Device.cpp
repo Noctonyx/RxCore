@@ -655,7 +655,7 @@ namespace RxCore
         return physicalDevice->getSupportedDepthFormat(checkSamplingSupport);
     }
 
-    void Device::getMemBudget(std::vector<MemHeapStatus> & heaps) const
+    void Device::getMemBudget(std::vector<RxApi::MemHeapStatus> & heaps) const
     {
         vk::PhysicalDeviceMemoryProperties2 pdmp2;
         vk::PhysicalDeviceMemoryBudgetPropertiesEXT ex;
@@ -668,7 +668,7 @@ namespace RxCore
 
         uint32_t hc = pdmp2.memoryProperties.memoryHeapCount;
         for (uint32_t i = 0; i < hc; i++) {
-            (void) heaps.emplace_back(MemHeapStatus{ex.heapBudget[i], ex.heapUsage[i]});
+            (void) heaps.emplace_back(RxApi::MemHeapStatus{ex.heapBudget[i], ex.heapUsage[i]});
         }
     }
 
