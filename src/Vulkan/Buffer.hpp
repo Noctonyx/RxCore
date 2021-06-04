@@ -52,6 +52,14 @@ namespace RxCore
         {
             return allocation_->getPtr();
         }
+
+        vk::DeviceAddress getDeviceAddress() const
+        {
+            vk::BufferDeviceAddressInfo bdai{};
+            bdai.setBuffer(handle_);
+
+            return device_.getBufferAddress(bdai);
+        }
         
     private:
         const vk::Buffer handle_ = nullptr;
