@@ -34,7 +34,6 @@ add_library(RxCore STATIC
     src/Vulkan/CommandPool.cpp
     src/Vulkan/CommandPool.hpp
     src/Vulkan/VMA.cpp 
-    src/RXCore.h
     src/optick/optick_core.cpp
     src/optick/optick_server.cpp
     src/optick/optick_serialization.cpp
@@ -57,7 +56,7 @@ add_library(RxCore STATIC
     src/Window.hpp
     src/Events.h
     src/Events.cpp
-)
+        src/Vulkan/Api.cpp)
 
 target_compile_options(RxCore PUBLIC -DNOMINMAX)
 target_compile_options(RxCore PUBLIC -DUSE_OPTICK=1)
@@ -78,9 +77,11 @@ if (MSVC)
 endif ()
 
 target_compile_options(RxCore PUBLIC -DVULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
-target_include_directories(RxCore PUBLIC "src")
+target_include_directories(RxCore PRIVATE "src")
+target_include_directories(RxCore PRIVATE "include")
+target_include_directories(RxCore PRIVATE "include/optick")
 target_include_directories(RxCore INTERFACE "include")
-target_include_directories(RxCore PUBLIC ${Vulkan_INCLUDE_DIR})
+target_include_directories(RxCore PRIVATE ${Vulkan_INCLUDE_DIR})
 target_link_libraries(RxCore PUBLIC ${Vulkan_LIBRARY})
 target_link_libraries(RxCore PUBLIC RxUtil)
 target_link_libraries(RxCore PUBLIC sdl2)

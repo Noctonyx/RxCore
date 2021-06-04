@@ -22,14 +22,23 @@ namespace RxCore
             th.detach();
         }
     }
+}
 
-    void JobBase::schedule(bool background)
-    {
-        JobManager::instance().Schedule(shared_from_this(), background);
-    }
+void RxApi::JobBase::schedule(bool background)
+{
+    RxCore::JobManager::instance().Schedule(shared_from_this(), background);
+}
 
-    void JobBase::schedule(std::shared_ptr<JobBase> parentJob, bool background)
-    {
-        JobManager::instance().Schedule(shared_from_this(), parentJob, background);
+void RxApi::JobBase::schedule(std::shared_ptr<JobBase> parentJob, bool background)
+{
+    RxCore::JobManager::instance().Schedule(shared_from_this(), parentJob, background);
+}
+
+void RxApi::JobBase::waitComplete() const
+{
+    OPTICK_CATEGORY("Job Wait", Optick::Category::Wait)
+
+    while (childCount.load() > 0) {
+        YieldProcessor();
     }
 }

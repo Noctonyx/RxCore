@@ -12,61 +12,11 @@
 #include <functional>
 #include "optick/optick.h"
 #include "Log.h"
+#include "RxCore.h"
 
 namespace RxCore
 {
-    struct JobBase : public std::enable_shared_from_this<JobBase>
-    {
-        std::atomic_uint16_t childCount;
-        std::shared_ptr<JobBase> parent;
-        //std::shared_ptr<JobBase> followedJob;
-        std::vector<std::shared_ptr<JobBase>> followOns;
-
-        virtual ~JobBase()
-        {
-            followOns.clear();
-            //followedJob.reset();
-            parent.reset();
-        }
-
-        JobBase(const JobBase & other) = delete;
-
-        JobBase(JobBase && other) noexcept = delete;
-
-        JobBase & operator=(const JobBase & other) = delete;
-
-        JobBase & operator=(JobBase && other) noexcept = delete;
-
-        JobBase()
-        {
-            childCount.store(1);
-        }
-
-        void waitComplete() const
-        {
-            OPTICK_CATEGORY("Job Wait", Optick::Category::Wait)
-
-            while (childCount.load() > 0) {
-                YieldProcessor();
-            }
-        }
-
-        bool isCompleted() const
-        {
-            return childCount.load() == 0;
-        }
-
-        virtual void execute() = 0;
-
-        void addFollowOnJob(std::shared_ptr<JobBase> j)
-        {
-            //j->followedJob = shared_from_this();
-            followOns.push_back(std::move(j));
-        }
-
-        void schedule(bool background = false);
-        void schedule(std::shared_ptr<JobBase> parentJob, bool background = false);
-    };
+ using JobBase = RxApi::JobBase;
 
     template <typename T>
     struct Job final : JobBase
