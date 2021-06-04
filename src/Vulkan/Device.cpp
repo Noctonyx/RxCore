@@ -32,7 +32,8 @@ namespace RxCore
         allocator_info.physicalDevice = physicalDevice->GetHandle();
         allocator_info.device = handle_;
         allocator_info.instance = instance->GetHandle();
-        allocator_info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+        allocator_info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT | VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+
 #if _DEBUG
         VmaRecordSettings rs;
         rs.flags = 0;
@@ -121,6 +122,9 @@ namespace RxCore
         vk::DeviceCreateInfo ci{};
         vk::PhysicalDeviceFeatures2 feat{};
 
+        vk::PhysicalDeviceBufferDeviceAddressFeatures bdaf{};
+        bdaf.setBufferDeviceAddress(true);
+
         // vk::PhysicalDeviceFloat16Int8FeaturesKHR f168;
         // f168.shaderInt8 = true;
 
@@ -154,6 +158,7 @@ namespace RxCore
 
         const std::vector<const char *> list_extensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+            //VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
             // VK_KHR_MAINTENANCE1_EXTENSION_NAME,
             // VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
             // VK_KHR_16BIT_STORAGE_EXTENSION_NAME,
@@ -178,7 +183,8 @@ namespace RxCore
                 };
         */
         // ci.pEnabledFeatures = &feat;
-        ci.pNext = &feat;
+        ci.pNext = &bdaf;
+        bdaf.pNext = &feat;
         ci.pQueueCreateInfos = dqci.data();
         ci.queueCreateInfoCount = static_cast<uint32_t>(dqci.size());
 
