@@ -56,7 +56,7 @@ add_library(RxCore STATIC
     src/Window.hpp
     src/Events.h
     src/Events.cpp
-        src/Vulkan/Api.cpp src/Vulkan/Api.h)
+        src/Vulkan/Api.cpp src/Vulkan/Api.h src/Api/RxSwapChain.cpp src/Api/RxSwapChain.h)
 
 target_compile_options(RxCore PUBLIC -DNOMINMAX)
 target_compile_options(RxCore PUBLIC -DUSE_OPTICK=1)
