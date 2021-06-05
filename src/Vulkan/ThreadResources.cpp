@@ -20,7 +20,7 @@ namespace RxCore
     std::shared_ptr<SecondaryCommandBuffer> ThreadResources::getCommandBuffer()
     {
         if (pool == nullptr) {
-            pool = RxCore::Device::Context()->CreateGraphicsCommandPool();
+            pool = device->CreateGraphicsCommandPool();
         }
 
         auto b = pool->GetSecondaryCommandBuffer();
@@ -35,5 +35,10 @@ namespace RxCore
             OPTICK_EVENT("Free buffer")
             buffers.pop_front();
         }
+    }
+
+    void ThreadResources::setDevice(RxCore::Device * d)
+    {
+        device = d;
     }
 }

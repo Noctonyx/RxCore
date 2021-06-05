@@ -20,10 +20,12 @@ namespace RxCore
 
         void freeAllResources();
         void freeUnused();
+        void setDevice(RxCore::Device * d);
 
         std::shared_ptr<CommandPool> pool;
         std::deque<std::shared_ptr<SecondaryCommandBuffer>> buffers;
         std::string threadId;
+        RxCore::Device * device;
     };
 
     extern thread_local ThreadResources threadResources;
@@ -36,5 +38,10 @@ namespace RxCore
     inline void freeAllThreadResource()
     {
         threadResources.freeAllResources();
+    }
+
+    inline void setThreadDevice(RxCore::Device * d)
+    {
+        threadResources.setDevice(d);
     }
 }

@@ -46,11 +46,12 @@ namespace RxCore
         ~Device();
 
     public:
-
+#if 0
         static Device * Context()
         {
             return context_;
         }
+#endif
         static vk::Device VkDevice()
         {
             return context_->getDevice();

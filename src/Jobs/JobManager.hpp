@@ -68,7 +68,7 @@ namespace RxCore
         void schedule(std::shared_ptr<JobBase> parentJob, bool background = false);
     };
 
-    template <typename T>
+    template<typename T>
     struct Job final : JobBase
     {
         std::function<T(void)> f;
@@ -76,7 +76,8 @@ namespace RxCore
         T result;
 
         explicit Job(std::function<T(void)> function)
-            : f(std::move(function)) {}
+            : f(std::move(function))
+        {}
 
         void execute() override
         {
@@ -85,13 +86,14 @@ namespace RxCore
         }
     };
 
-    template <>
+    template<>
     struct Job<void> final : JobBase
     {
         std::function<void(void)> f;
 
         explicit Job(std::function<void(void)> function)
-            : f(std::move(function)) {}
+            : f(std::move(function))
+        {}
 
         void execute() override
         {
@@ -100,7 +102,7 @@ namespace RxCore
         }
     };
 
-    template <typename T, typename F>
+    template<typename T, typename F>
     std::shared_ptr<Job<T>> CreateJob(F f)
     {
         return std::make_shared<Job<T>>(f);
@@ -161,6 +163,7 @@ namespace RxCore
         static inline thread_local uint16_t threadId;
         static inline thread_local std::shared_ptr<JobBase> currentJob = nullptr;
 
+        std::function<void()> initFunction{};
         std::function<void()> freeResourcesFunction;
         std::function<void()> freeAllResourcesFunction;
 
@@ -182,14 +185,15 @@ namespace RxCore
         }
 
         JobManager();
+        void startup();
 
-        template <typename T, typename F>
+        template<typename T, typename F>
         static auto CreateJob(F f)
         {
             return std::make_shared<Job<T>>(f);
         }
 
-        template <typename T, typename F>
+        template<typename T, typename F>
         static auto Schedule(F f)
         {
             return instance().Schedule(std::make_shared<Job<T>>(f));
@@ -201,8 +205,10 @@ namespace RxCore
 
             threadId = index;
             ++threadStartedCount_;
+            if (initFunction) {
+                initFunction();
+            }
             while (threadStartedCount_.load() < threadCount_.load()) {}
-
             //std::cout << "Thread Ready " << index << std::endl;
             while (!shutdown_.load()) {
                 auto job = queue_->pop();
@@ -266,7 +272,7 @@ namespace RxCore
             spdlog::info("Main thread Pool Reset");
         }
 
-        template <typename T>
+        template<typename T>
         T Schedule(T job, bool background = false)
         {
             if (currentJob) {
@@ -276,7 +282,7 @@ namespace RxCore
             return job;
         }
 
-        template <typename T, typename U>
+        template<typename T, typename U>
         T Schedule(T job, U parent, bool background = false)
         {
             job->parent = std::move(parent);

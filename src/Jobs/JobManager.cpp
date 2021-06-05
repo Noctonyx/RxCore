@@ -10,6 +10,10 @@ namespace RxCore
 
     JobManager::JobManager()
     {
+    }
+
+    void JobManager::startup()
+    {
         threadCount_ = static_cast<uint16_t>(std::thread::hardware_concurrency() - 1);
         spdlog::info("Starting {} worker threads", threadCount_);
         queue_ = std::make_unique<JobQueue>();
@@ -21,6 +25,7 @@ namespace RxCore
             auto th = std::thread(&JobManager::JobTask, this, i);
             th.detach();
         }
+
     }
 
     void JobBase::schedule(bool background)
