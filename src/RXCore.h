@@ -7,7 +7,6 @@
 
 #include "Vulkan/Vulk.hpp"
 #include "Vulkan/DescriptorSet.hpp"
-#include "Vulkan/PipelineBuilder.hpp"
 #include "Vulkan/Buffer.hpp"
 #include "Vulkan/VertexBuffer.h"
 #include "Vulkan/IndexBuffer.hpp"

@@ -1,17 +1,19 @@
 #pragma once
 
-#include "DeviceObject.h"
 #include "Allocation.h"
 #include "Util.h"
+#include "Device.h"
 
 namespace RxCore
 {
-    class Buffer : public DeviceObject
+    class Device;
+
+    class Buffer
     {
         friend class DescriptorSet;
 
     public:
-        Buffer(vk::Device device,
+        Buffer(Device * device,
                vk::Buffer handle,
                std::shared_ptr<Allocation> allocation,
                vk::DeviceSize size);
@@ -58,10 +60,11 @@ namespace RxCore
             vk::BufferDeviceAddressInfo bdai{};
             bdai.setBuffer(handle_);
 
-            return device_.getBufferAddress(bdai);
+            return device_->getDevice().getBufferAddress(bdai);
         }
         
     private:
+        Device * device_;
         const vk::Buffer handle_ = nullptr;
         vk::DeviceSize size_ = 0;
         std::shared_ptr<Allocation> allocation_;

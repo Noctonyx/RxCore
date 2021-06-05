@@ -10,7 +10,7 @@ namespace RxCore
 
     public:
         explicit IndexBuffer(
-            vk::Device device,
+            Device * device,
             vk::Buffer handle,
             std::shared_ptr<Allocation> alloc,
             uint32_t indexCount,

@@ -13,12 +13,12 @@
 namespace RxCore
 {
     DescriptorSet::DescriptorSet(
-        vk::Device device,
+        Device * device,
         std::shared_ptr<DescriptorPool> descriptorPool,
         vk::DescriptorSet newHandle
     )
     //: VulkanResource<DescriptorSet, vk::DescriptorSet>(context)
-        : DeviceObject(device)
+        : device_(device)
         , handle(newHandle)
         , descriptorPool_(std::move(descriptorPool)) {}
 
@@ -51,7 +51,7 @@ namespace RxCore
         } else {
             offsets_[binding] = std::nullopt;
         }
-        device_.updateDescriptorSets(
+        device_->getDevice().updateDescriptorSets(
             static_cast<uint32_t>(wds.size()),
             wds.data(),
             0,
@@ -102,7 +102,7 @@ namespace RxCore
            .setDstBinding(binding)
            .setPImageInfo(&dii);
 
-        device_.updateDescriptorSets({wds}, {});
+        device_->getDevice().updateDescriptorSets({wds}, {});
     }
 
     void DescriptorSet::updateDescriptor(
@@ -142,7 +142,7 @@ namespace RxCore
            .setDstSet(handle)
            .setDstBinding(binding)
            .setPImageInfo(&dii);
-        device_.updateDescriptorSets({wds}, {});
+        device_->getDevice().updateDescriptorSets({wds}, {});
     }
 #if 0
     std::shared_ptr<ImageView> DescriptorSet::getBoundImageView(uint32_t binding) const
@@ -201,7 +201,7 @@ namespace RxCore
            .setDstBinding(binding)
            .setImageInfo(dii);
 
-        device_.updateDescriptorSets({wds}, {});
+        device_->getDevice().updateDescriptorSets({wds}, {});
     }
 
     std::vector<uint32_t> DescriptorSet::getOffsets() const

@@ -1,24 +1,25 @@
 #pragma once
 
-#include "DeviceObject.h"
+#include "Vulk.hpp"
+#include "Util.h"
 
 namespace RxCore
 {
     class ImageView;
     class Allocation;
 
-    class Image : public DeviceObject, public std::enable_shared_from_this<Image>
+    class Image : public std::enable_shared_from_this<Image>
     {
         friend class Device;
 
     public:
         explicit Image(
-            vk::Device device,
+            Device * device,
             vk::Image image,
             vk::Format format,
             std::shared_ptr<Allocation> allocation,
             vk::Extent3D extent)
-            : DeviceObject(device)
+            : device_(device)
             , extent_(extent)
             , handle_(image)
             , currentLayout_(vk::ImageLayout::eUndefined)
@@ -44,6 +45,7 @@ namespace RxCore
         vk::Extent3D extent_;
 
     private:
+        Device * device_;
         vk::Image handle_;
         vk::ImageLayout currentLayout_;
         vk::Format format_ = vk::Format::eUndefined;
@@ -51,10 +53,10 @@ namespace RxCore
         std::shared_ptr<Allocation> allocation_;
     };
 
-    class ImageView : public DeviceObject
+    class ImageView
     {
     public:
-        ImageView(vk::Device device, vk::ImageView handle, std::shared_ptr<Image> image);
+        ImageView(Device * device, vk::ImageView handle, std::shared_ptr<Image> image);
         ~ImageView();
 
         RX_NO_COPY_NO_MOVE(ImageView);
@@ -63,6 +65,7 @@ namespace RxCore
         std::shared_ptr<Image> getImage() const;
 
     private:
+        Device * device_;
         std::shared_ptr<Image> image_;
     };
 } // namespace RXCore

@@ -55,7 +55,7 @@ namespace RxCore
         }
         Device::context_ = this;
 
-        surface = std::make_shared<Surface>((vk::SurfaceKHR) surface_khr);
+        surface = std::make_shared<Surface>(this, (vk::SurfaceKHR) surface_khr);
 
         createQueues();
 
@@ -352,7 +352,7 @@ namespace RxCore
         const vk::BufferUsageFlags & flags,
         VmaMemoryUsage memType,
         const vk::DeviceSize size,
-        void * data) const
+        void * data)
     {
         OPTICK_EVENT()
 
@@ -376,7 +376,7 @@ namespace RxCore
         //assert(res == VK_SUCCESS );
 
         auto alloc = std::make_shared<Allocation>(allocator, allocation);
-        auto mb = std::make_shared<Buffer>(handle_, buffer, alloc, size);
+        auto mb = std::make_shared<Buffer>(this, buffer, alloc, size);
 
         if (data) {
             VkMemoryPropertyFlags memFlags;
@@ -404,7 +404,7 @@ namespace RxCore
         VmaMemoryUsage memType,
         uint32_t vertexCount,
         uint32_t vertexSize,
-        void * data) const
+        void * data)
     {
         auto s = vertexCount * vertexSize;
 
@@ -423,7 +423,7 @@ namespace RxCore
         vmaCreateBuffer(allocator, &buffer_info, &alloc_info, &buffer, &allocation, nullptr);
         auto alloc = std::make_shared<Allocation>(allocator, allocation);
 
-        auto mb = std::make_shared<VertexBuffer>(handle_, buffer, alloc, vertexCount, vertexSize);
+        auto mb = std::make_shared<VertexBuffer>(this, buffer, alloc, vertexCount, vertexSize);
         if (data) {
             auto stage_buf = createStagingBuffer(s, data);
             transferBuffer(stage_buf, mb, s);
@@ -444,7 +444,7 @@ namespace RxCore
         VmaMemoryUsage memType,
         uint32_t indexCount,
         bool is16,
-        void * data) const
+        void * data)
     {
         auto s = (is16 ? sizeof(uint16_t) : sizeof(uint32_t)) * indexCount;
 
@@ -462,7 +462,7 @@ namespace RxCore
         VmaAllocation allocation;
         vmaCreateBuffer(allocator, &buffer_info, &alloc_info, &buffer, &allocation, nullptr);
         auto alloc = std::make_shared<Allocation>(allocator, allocation);
-        auto mb = std::make_shared<IndexBuffer>(handle_, buffer, alloc, indexCount, is16);
+        auto mb = std::make_shared<IndexBuffer>(this, buffer, alloc, indexCount, is16);
 
         if (data) {
             auto buf = createStagingBuffer(s, data);
@@ -477,7 +477,7 @@ namespace RxCore
         uint32_t mipLevels,
         uint32_t layers,
         vk::ImageUsageFlags usage,
-        vk::ImageType type) const
+        vk::ImageType type)
     {
         vk::ImageCreateInfo ici{
             {},
@@ -502,7 +502,7 @@ namespace RxCore
             &allocation, nullptr);
 
         auto i = std::make_shared<Image>(
-            handle_, image, format, std::make_shared<Allocation>(allocator, allocation), extent);
+            this, image, format, std::make_shared<Allocation>(allocator, allocation), extent);
 
         return i;
     }
@@ -637,7 +637,7 @@ namespace RxCore
 
         auto h = getDevice().createDescriptorPool(dpci);
 
-        return std::make_shared<DescriptorPool>(handle_, h);
+        return std::make_shared<DescriptorPool>(this, h);
     }
 
     void Device::WaitIdle() const
@@ -672,7 +672,7 @@ namespace RxCore
         }
     }
 
-    std::shared_ptr<Buffer> Device::createStagingBuffer(size_t size, const void * data) const
+    std::shared_ptr<Buffer> Device::createStagingBuffer(size_t size, const void * data)
     {
         VkBufferCreateInfo buffer_info {
             VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, size,
@@ -687,7 +687,7 @@ namespace RxCore
         vmaCreateBuffer(allocator, &buffer_info, &alloc_info, &buffer_handle, &allocation, nullptr);
 
         auto all = std::make_shared<Allocation>(allocator, allocation);
-        auto buf = std::make_shared<Buffer>(handle_, buffer_handle, all, size);
+        auto buf = std::make_shared<Buffer>(this, buffer_handle, all, size);
         all->map();
         all->update(data, size);
         all->unmap();
@@ -747,7 +747,7 @@ namespace RxCore
         const vk::CommandPoolCreateInfo & cci)
     {
         auto h = handle_.createCommandPool(cci);
-        return std::make_shared<CommandPool>(handle_, h, cci.queueFamilyIndex);
+        return std::make_shared<CommandPool>(this, h, cci.queueFamilyIndex);
     }
 
     vk::PipelineLayout Device::createPipelineLayout(const vk::PipelineLayoutCreateInfo & plci)
@@ -893,5 +893,20 @@ namespace RxCore
         }
 
         return h.get();
+    }
+
+    void Device::destroyDescriptorPool(DescriptorPool * pool)
+    {
+        handle_.destroyDescriptorPool(pool->handle);
+    }
+
+    void Device::freeCommandBuffer(CommandBuffer * buf)
+    {
+        handle_.freeCommandBuffers(buf->commandPool_->GetHandle(), 1, &buf->handle_);
+    }
+
+    void Device::destroySurface(Surface * s)
+    {
+        instance->GetHandle().destroySurfaceKHR(s->handle);
     }
 } // namespace RXCore

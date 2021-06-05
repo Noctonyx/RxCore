@@ -13,8 +13,6 @@ add_library(RxCore STATIC
     src/Vulkan/Surface.hpp
     src/Vulkan/SwapChain.cpp
     src/Vulkan/SwapChain.hpp
-    src/Vulkan/PipelineBuilder.cpp
-    src/Vulkan/PipelineBuilder.hpp
     src/Vulkan/CommandBuffer.cpp
     src/Vulkan/CommandBuffer.hpp
     src/Vulkan/Vulk.hpp
@@ -46,7 +44,6 @@ add_library(RxCore STATIC
     src/Jobs/JobManager.hpp
     src/Vulkan/FrameBuffer.h
     src/Vulkan/Shader.h
-    src/Vulkan/DeviceObject.h
     src/Vulkan/Allocation.cpp
     src/Vulkan/Allocation.h
     src/Vulkan/IPipelineLayout.h

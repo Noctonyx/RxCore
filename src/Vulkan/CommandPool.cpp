@@ -9,15 +9,15 @@
 
 namespace RxCore
 {
-    CommandPool::CommandPool(vk::Device device, vk::CommandPool handle, uint32_t qf)
-        : DeviceObject(device)
+    CommandPool::CommandPool(Device * device, vk::CommandPool handle, uint32_t qf)
+        : device_(device)
         , handle(handle)
         //, queuefamily_(qf)
     {}
 
     CommandPool::~CommandPool()
     {
-        device_.destroyCommandPool(handle);
+        device_->getDevice().destroyCommandPool(handle);
     }
 
     std::shared_ptr<PrimaryCommandBuffer> CommandPool::GetPrimaryCommandBuffer()
@@ -27,8 +27,8 @@ namespace RxCore
 
         cbai.setLevel(vk::CommandBufferLevel::ePrimary);
 
-        auto res = device_.allocateCommandBuffers(cbai);
-        return std::make_shared<PrimaryCommandBuffer>(res[0], shared_from_this());
+        auto res = device_->getDevice().allocateCommandBuffers(cbai);
+        return std::make_shared<PrimaryCommandBuffer>(device_, res[0], shared_from_this());
     }
 
     std::shared_ptr<SecondaryCommandBuffer> CommandPool::GetSecondaryCommandBuffer()
@@ -38,8 +38,8 @@ namespace RxCore
 
         cbai.setLevel(vk::CommandBufferLevel::eSecondary);
 
-        auto res = device_.allocateCommandBuffers(cbai);
-        return std::make_shared<SecondaryCommandBuffer>(res[0], shared_from_this());
+        auto res = device_->getDevice().allocateCommandBuffers(cbai);
+        return std::make_shared<SecondaryCommandBuffer>(device_, res[0], shared_from_this());
     }
 
     std::shared_ptr<TransferCommandBuffer> CommandPool::createTransferCommandBuffer()
@@ -49,8 +49,8 @@ namespace RxCore
 
         cbai.setLevel(vk::CommandBufferLevel::ePrimary);
 
-        auto res = device_.allocateCommandBuffers(cbai);
-        return std::make_shared<TransferCommandBuffer>(res[0], shared_from_this());
+        auto res = device_->getDevice().allocateCommandBuffers(cbai);
+        return std::make_shared<TransferCommandBuffer>(device_, res[0], shared_from_this());
     }
 
 } // namespace RXCore

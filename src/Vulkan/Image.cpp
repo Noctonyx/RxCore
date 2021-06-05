@@ -1,11 +1,12 @@
 #include "Image.hpp"
-#include "vulkan/vulkan.hpp"
+//#include "vulkan/vulkan.hpp"
+#include "Device.h"
 
 namespace RxCore
 {
     Image::~Image()
     {
-        device_.destroyImage(handle_);
+        device_->getDevice().destroyImage(handle_);
         allocation_.reset();
     }
 
@@ -20,19 +21,19 @@ namespace RxCore
         ivci.setViewType(viewType).setFormat(format_).setImage(handle_).setSubresourceRange(
             {aspect, 0, VK_REMAINING_MIP_LEVELS, baseArrayLayer, layerCount});
 
-        auto h = device_.createImageView(ivci);
+        auto h = device_->getDevice().createImageView(ivci);
         return std::make_shared<ImageView>(device_, h, shared_from_this());
     }
 
-    ImageView::ImageView(vk::Device device, vk::ImageView handle, std::shared_ptr<Image> image)
-        : DeviceObject(device)
+    ImageView::ImageView(Device * device, vk::ImageView handle, std::shared_ptr<Image> image)
+        : device_(device)
         , handle(handle)
         , image_(std::move(image)) {}
 
     ImageView::~ImageView()
     {
         image_.reset();
-        device_.destroyImageView(handle);
+        device_->getDevice().destroyImageView(handle);
     }
 
     std::shared_ptr<Image> ImageView::getImage() const

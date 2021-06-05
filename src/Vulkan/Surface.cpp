@@ -5,8 +5,9 @@
 
 namespace RxCore
 {
-    Surface::Surface(vk::SurfaceKHR handle)
-        : handle(handle)
+    Surface::Surface(Device * device, vk::SurfaceKHR handle)
+        : device_(device)
+        , handle(handle)
     {
         getSurfaceDetails();
 
@@ -17,7 +18,7 @@ namespace RxCore
 
     Surface::~Surface()
     {
-        Device::Context()->instance->GetHandle().destroySurfaceKHR(handle);
+        device_->destroySurface(this);
     }
 
     void Surface::getSurfaceDetails()

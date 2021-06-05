@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <memory>
 #include "Vulk.hpp"
-#include "DeviceObject.h"
+#include "Util.h"
 
 namespace RxCore
 {
@@ -24,10 +24,10 @@ namespace RxCore
         std::shared_ptr<ImageView> imageView;
     };
 
-    class DescriptorSet : public DeviceObject
+    class DescriptorSet
     {
     public:
-        DescriptorSet(vk::Device device,
+        DescriptorSet(Device * device,
                       std::shared_ptr<DescriptorPool> descriptorPool,
                       vk::DescriptorSet newHandle);
 
@@ -69,6 +69,7 @@ namespace RxCore
         std::vector<uint32_t> getOffsets() const;
 
     private:
+        Device * device_;
         std::shared_ptr<DescriptorPool> descriptorPool_;
         std::unordered_map<uint32_t, std::shared_ptr<Buffer>> buffers_;
         std::unordered_map<uint32_t, std::vector<std::shared_ptr<ImageView>>> imageViews_;

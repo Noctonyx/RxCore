@@ -6,8 +6,6 @@
 
 #include "Vulk.hpp"
 #include "Instance.hpp"
-//#include "SwapChain.hpp"
-//#include "../UI/Window.hpp"
 #include <optional>
 
 namespace RxCore
@@ -22,7 +20,7 @@ namespace RxCore
         friend class Device;
 
     public:
-        Surface(vk::SurfaceKHR handle);
+        Surface(Device * device, vk::SurfaceKHR handle);
         ~Surface();
 
         std::unique_ptr<SwapChain> CreateSwapChain();
@@ -39,6 +37,7 @@ namespace RxCore
         vk::SurfaceKHR handle;
 
     private:
+        Device * device_;
         std::optional<uint32_t> presentQueueFamily_;
         bool exclusiveQueueSupport_{};
 

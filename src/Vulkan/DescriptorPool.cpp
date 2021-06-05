@@ -9,8 +9,8 @@
 
 namespace RxCore
 {
-    DescriptorPool::DescriptorPool(vk::Device device, vk::DescriptorPool new_handle)
-        : DeviceObject(device)
+    DescriptorPool::DescriptorPool(Device * device, vk::DescriptorPool new_handle)
+        : device_(device)
         , handle(new_handle)
     {
     }
@@ -38,7 +38,7 @@ namespace RxCore
     void DescriptorPool::handBackDescriptorSet(vk::DescriptorSet descriptor_set)
     {
         OPTICK_EVENT()
-        device_.freeDescriptorSets(handle, descriptor_set);
+        device_->getDevice().freeDescriptorSets(handle, descriptor_set);
     }
 
     std::shared_ptr<DescriptorSet> DescriptorPool::allocateDescriptorSet(
@@ -66,7 +66,7 @@ namespace RxCore
         }
         return std::make_shared<DescriptorSet>(device_, shared_from_this(), ds[0]);
     }
-
+#if 0
     DescriptorPoolGroup::DescriptorPoolGroup(const DescriptorPoolTemplate & poolTemplate)
         : poolSizes(poolTemplate.poolSizes)
         , max(poolTemplate.max)
@@ -133,4 +133,5 @@ namespace RxCore
     {
         descriptorPool.reset();
     }
+#endif
 }

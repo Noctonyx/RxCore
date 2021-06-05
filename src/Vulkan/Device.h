@@ -21,6 +21,7 @@ namespace RxCore
     class Image;
     class DescriptorPool;
     class CommandPool;
+    class CommandBuffer;
     class Shader;
 
     struct MemHeapStatus
@@ -44,11 +45,11 @@ namespace RxCore
         ~Device();
 
     public:
+
         static Device * Context()
         {
             return context_;
         }
-
         static vk::Device VkDevice()
         {
             return context_->getDevice();
@@ -68,7 +69,22 @@ namespace RxCore
             uint32_t mipLevels,
             uint32_t layers,
             vk::ImageUsageFlags usage,
-            vk::ImageType type = vk::ImageType::e2D) const;
+            vk::ImageType type = vk::ImageType::e2D);
+
+        void freeCommandBuffer(CommandBuffer * buf);
+        void destroyDescriptorPool(DescriptorPool * pool);
+
+        //------- Surface
+        void destroySurface(Surface * surface);
+        bool getSurfaceCapabilities(Surface * surface);
+        std::vector<vk::SurfaceFormatKHR> getSurfaceFormats(Surface * surface);
+        std::vector<vk::PresentModeKHR> getSurfacePresentModes(Surface * surface);
+        bool getSurfaceQueueSupport(uint32_t queueFamily, Surface * surface);
+
+        //std::unique_ptr<SwapChain> createSwapChain(Surface * surface, )
+        //---------
+
+
 #if 0
         std::shared_ptr<Image> Create2DImage(
             vk::Format format,
@@ -144,12 +160,12 @@ namespace RxCore
 
         std::shared_ptr<CommandPool> createCommandPool(const vk::CommandPoolCreateInfo & cci);
         // std::shared_ptr<Buffer> createUniformBuffer(MemoryType memType, const uint64_t size, void * data);
-        std::shared_ptr<Buffer> createStagingBuffer(size_t size, const void * data) const;
+        std::shared_ptr<Buffer> createStagingBuffer(size_t size, const void * data);
         std::shared_ptr<Buffer> createBuffer(
             const vk::BufferUsageFlags & flags,
             VmaMemoryUsage memType,
             vk::DeviceSize size,
-            void * data = nullptr) const;
+            void * data = nullptr);
 
 #if 0
         std::shared_ptr<IndexBuffer> createIndexBuffer(
@@ -161,7 +177,7 @@ namespace RxCore
             VmaMemoryUsage memType,
             uint32_t indexCount,
             bool is16,
-            void * data = nullptr) const;
+            void * data = nullptr);
 #if 0
         std::shared_ptr<VertexBuffer> createVertexBuffer(
             VmaMemoryUsage memType,
@@ -172,7 +188,7 @@ namespace RxCore
             VmaMemoryUsage memType,
             uint32_t vertexCount,
             uint32_t vertexSize,
-            void * data = nullptr) const;
+            void * data = nullptr);
 
         // =---- Getting Information
 

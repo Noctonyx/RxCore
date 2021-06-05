@@ -6,6 +6,8 @@
 #include <map>
 #include "Device.h"
 #include "CommandPool.hpp"
+#include "Vulk.hpp"
+#include "Util.h"
 
 namespace RxCore
 {
@@ -18,16 +20,21 @@ namespace RxCore
 
     class CommandBuffer
     {
+        friend class Device;
+
     public:
-        CommandBuffer(vk::CommandBuffer handle, std::shared_ptr<CommandPool> pool)
-            : handle_(handle)
-            , commandPool_(std::move(pool)) {}
+        CommandBuffer(RxCore::Device * device, vk::CommandBuffer handle, std::shared_ptr<CommandPool> pool)
+            : device_(device)
+            , handle_(handle)
+            , commandPool_(std::move(pool))
+        {}
 
         RX_NO_COPY_NO_MOVE(CommandBuffer);
 
         virtual ~CommandBuffer()
         {
-            Device::VkDevice().freeCommandBuffers(commandPool_->GetHandle(), 1, &handle_);
+            device_->freeCommandBuffer(this);
+            //Device::VkDevice().freeCommandBuffers(commandPool_->GetHandle(), 1, &handle_);
         }
 
         void useLayout(vk::PipelineLayout layout)
@@ -36,7 +43,6 @@ namespace RxCore
         }
 
         void begin();
-
         void end();
 
         void beginRenderPass(
@@ -122,6 +128,7 @@ namespace RxCore
         }
 
     protected:
+        RxCore::Device * device_;
         vk::CommandBuffer handle_;
         std::set<std::shared_ptr<Buffer>> buffers_;
         //std::set<std::shared_ptr<Pipeline>> pipelines_;
@@ -136,8 +143,9 @@ namespace RxCore
     class PrimaryCommandBuffer final : public CommandBuffer
     {
     public:
-        PrimaryCommandBuffer(const vk::CommandBuffer & handle, std::shared_ptr<CommandPool> pool)
-            : CommandBuffer(handle, std::move(pool)) {}
+        PrimaryCommandBuffer(RxCore::Device * device,const vk::CommandBuffer & handle, std::shared_ptr<CommandPool> pool)
+            : CommandBuffer(device, handle, std::move(pool))
+        {}
 
         ~PrimaryCommandBuffer() override
         {
@@ -160,8 +168,9 @@ namespace RxCore
     class TransferCommandBuffer final : public CommandBuffer
     {
     public:
-        TransferCommandBuffer(const vk::CommandBuffer & handle, std::shared_ptr<CommandPool> pool)
-            : CommandBuffer(handle, std::move(pool)) {}
+        TransferCommandBuffer(RxCore::Device * device, const vk::CommandBuffer & handle, std::shared_ptr<CommandPool> pool)
+            : CommandBuffer(device, handle, std::move(pool))
+        {}
 
         RX_NO_COPY_NO_MOVE(TransferCommandBuffer)
 
@@ -195,9 +204,11 @@ namespace RxCore
     {
     public:
         SecondaryCommandBuffer(
+            RxCore::Device * device,
             vk::CommandBuffer handle,
             std::shared_ptr<CommandPool> pool)
-            : CommandBuffer(handle, std::move(pool)) {}
+            : CommandBuffer(device, handle, std::move(pool))
+        {}
 
         RX_NO_COPY_NO_MOVE(SecondaryCommandBuffer)
 

@@ -6,7 +6,7 @@
 #define RX_COMMANDPOOL_HPP
 
 #include "Vulk.hpp"
-#include "DeviceObject.h"
+
 //#include "Rendering/Renderer.hpp"
 
 namespace RxCore
@@ -15,15 +15,16 @@ namespace RxCore
     class SecondaryCommandBuffer;
     class PrimaryCommandBuffer;
     class TransferCommandBuffer;
+    class Device;
 
     class RenderPass;
 
-    class CommandPool : public DeviceObject,  public std::enable_shared_from_this<CommandPool>
+    class CommandPool : public std::enable_shared_from_this<CommandPool>
     {
     public:
         typedef std::shared_ptr<CommandBuffer> ptr;
 
-        CommandPool(vk::Device device, vk::CommandPool handle, uint32_t qf);
+        CommandPool(Device * device, vk::CommandPool handle, uint32_t qf);
         //CommandPool(uint32_t queueFamily);
         ~CommandPool();
 
@@ -35,6 +36,7 @@ namespace RxCore
 
     private:
         vk::CommandPool handle;
+        Device * device_;
         //uint32_t queuefamily_;
     };
 } // namespace RXCore

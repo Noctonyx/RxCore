@@ -9,13 +9,12 @@
 #include <memory>
 #include <deque>
 #include "Device.h"
-#include "DeviceObject.h"
 
 namespace RxCore
 {
     class DescriptorSet;
     class Device;
-
+#if 0
     struct DescriptorPoolTemplate
     {
         DescriptorPoolTemplate(const std::vector<vk::DescriptorPoolSize> & poolSizes, uint32_t max)
@@ -38,11 +37,11 @@ namespace RxCore
         uint32_t max;
         RxUtil::Hash hash;
     };
-
-    class DescriptorPool : public DeviceObject, public std::enable_shared_from_this<DescriptorPool>
+#endif
+    class DescriptorPool : public std::enable_shared_from_this<DescriptorPool>
     {
     public:
-        explicit DescriptorPool(vk::Device device, vk::DescriptorPool new_handle);
+        explicit DescriptorPool(Device * device, vk::DescriptorPool new_handle);
 
         DescriptorPool(vk::Device device, const DescriptorPool & other) = delete;
         //DescriptorPool(DescriptorPool&& other) = delete;
@@ -51,7 +50,7 @@ namespace RxCore
 
         virtual ~DescriptorPool()
         {
-            Device::VkDevice().destroyDescriptorPool(handle);
+            device_->destroyDescriptorPool(this);
         };
 
         std::shared_ptr<DescriptorSet> allocateDescriptorSet(vk::DescriptorSetLayout layout);
@@ -62,8 +61,9 @@ namespace RxCore
 
         const vk::DescriptorPool handle;
     private:
+        Device * device_;
     };
-
+#if 0
     struct DescriptorPoolGroup
     {
         explicit DescriptorPoolGroup(const DescriptorPoolTemplate & poolTemplate);
@@ -79,6 +79,6 @@ namespace RxCore
             vk::DescriptorSetLayout layout,
             const std::vector<uint32_t> & counts);
     };
-
+#endif
 }
 #endif //AMX_DESCRIPTORPOOL_HPP
