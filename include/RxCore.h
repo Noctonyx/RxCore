@@ -1,3 +1,28 @@
+////////////////////////////////////////////////////////////////////////////////
+// MIT License
+//
+// Copyright (c) 2021.  Shane Hyde
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include <vector>
@@ -8,6 +33,8 @@
 
 namespace RxCore {
     class RxDevice;
+    class SwapChain;
+    class ImageView;
 }
 
 namespace RxApi
@@ -83,15 +110,15 @@ namespace RxApi
         virtual UniformBufferPtr createUniformBuffer(BufferLocation location, size_t size) = 0;
         virtual UniformDynamicBufferPtr createUniformDynamicBuffer(
             BufferLocation location,
-            size_t size) = 0;
+            size_t blockSize,
+            size_t count) = 0;
         virtual VertexBufferPtr createVertexBuffer(BufferLocation location, size_t size) = 0;
         virtual IndexBufferPtr createIndexBuffer(BufferLocation location, size_t size) = 0;
         virtual BufferPtr createBuffer(BufferLocation location, size_t size) = 0;
 
-        virtual SurfacePtr getSurface() const = 0;
-
         virtual void getMemBudget(std::vector<MemHeapStatus> & heaps) const = 0;
-
+        SurfacePtr getSurface() const;
+        void waitIdle() const;
     private:
         std::unique_ptr<RxCore::RxDevice> pImpl;
     };
@@ -190,7 +217,10 @@ namespace RxApi
     class ImageView
     {
     public:
-        virtual ~ImageView() = default;
+        ~ImageView() = default;
+        ImageView(std::shared_ptr<RxCore::ImageView> pImpl);
+    private:
+        std::shared_ptr<RxCore::ImageView> pImpl;
     };
 
     class CommandBuffer
@@ -264,9 +294,16 @@ namespace RxApi
     class SwapChain
     {
     public:
-        virtual ~SwapChain() = default;
+        ~SwapChain() = default;
 
-        virtual void setSwapChainOutOfDate(bool status) = 0;
+        [[nodiscard]] bool swapChainOutOfDate() const;
+        void setSwapChainOutOfDate(bool status);
+        [[nodiscard]] Extent getExtent() const;
+        std::tuple<RxApi::ImageViewPtr,RxApi::Semaphore, uint32_t> acquireNextImage();
+        void presentImage(RxApi::ImageViewPtr imageView, RxApi::Semaphore renderComplete);
+
+    private:
+        std::unique_ptr<RxCore::SwapChain> pImpl;
     };
 
     struct MemHeapStatus
