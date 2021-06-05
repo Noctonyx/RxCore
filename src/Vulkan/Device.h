@@ -76,24 +76,18 @@ namespace RxCore
         void destroyDescriptorPool(DescriptorPool * pool);
 
         //------- Surface
-//        void destroySurface(Surface * surface);
-  //      bool getSurfaceCapabilities(Surface * surface);
-//        std::vector<vk::SurfaceFormatKHR> getSurfaceFormats(Surface * surface);
-  //      std::vector<vk::PresentModeKHR> getSurfacePresentModes(Surface * surface);
-    //    bool getSurfaceQueueSupport(uint32_t queueFamily, Surface * surface);
-
         std::unique_ptr<SwapChain> createSwapChain();
-        //void updateSurfaceCapabilities();
         [[nodiscard]] uint32_t getPresentQueueFamily() const;
-        //std::unique_ptr<SwapChain> createSwapChain(Surface * surface, )
-        //---------
         void updateSurfaceCapabilities();
     protected:
         void getSurfaceDetails();
         void selectSurfaceFormat();
         void selectPresentationMode();
         void selectPresentationQueueFamily();
+
     public:
+
+        std::shared_ptr<Queue> getTransferQueue() const;
 #if 0
         std::shared_ptr<Image> Create2DImage(
             vk::Format format,
@@ -251,8 +245,10 @@ namespace RxCore
         void createQueues();
     };
 
+#if 0
     inline Device * iVulkan()
     {
         return Device::Context();
     }
+#endif
 } // namespace RXCore

@@ -250,7 +250,8 @@ namespace RxCore
 
     void TransferCommandBuffer::submitAndWait()
     {
-        auto queue = RxCore::iVulkan()->transferQueue_;
+        auto queue = device_->getTransferQueue();
+        //auto queue = RxCore::iVulkan()->transferQueue_;
 
         vk::SubmitInfo si{
             nullptr, nullptr,

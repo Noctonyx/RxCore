@@ -44,7 +44,6 @@ add_library(RxCore STATIC
     src/Vulkan/Shader.h
     src/Vulkan/Allocation.cpp
     src/Vulkan/Allocation.h
-    src/Vulkan/IPipelineLayout.h
     src/Vulkan/ThreadResources.cpp
     src/Vulkan/ThreadResources.h
     src/Vulkan/Pipeline.h 

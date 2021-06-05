@@ -1036,4 +1036,9 @@ namespace RxCore
     {
         return presentQueueFamily_.value();
     }
+
+    std::shared_ptr<Queue> Device::getTransferQueue() const
+    {
+        return transferQueue_;
+    }
 } // namespace RXCore
