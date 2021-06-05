@@ -24,16 +24,16 @@ namespace RxCore
 
     SwapChain::~SwapChain()
     {
-        const auto device = Device::VkDevice();
+        //const auto device = Device::VkDevice();
 
         for (uint32_t i = 0; i < imageCount_; i++) {
-            device.destroySemaphore(imageReadySemaphores_[i]);
+            device_->getDevice().destroySemaphore(imageReadySemaphores_[i]);
             //device.destroySemaphore(swapChainState_[i].renderFinishedSemaphore);
-            device.destroyImageView(swapChainState_[i].imageView);
+            device_->getDevice().destroyImageView(swapChainState_[i].imageView);
             //m_Device.GetVK().destroyImage(m_SwapChainState[i].m_Image);
         }
 
-        device.destroySwapchainKHR(handle);
+        device_->getDevice().destroySwapchainKHR(handle);
     }
 
     void SwapChain::createResources()
@@ -92,7 +92,7 @@ namespace RxCore
 
         // *semaphore = m_SwapChainState[m_CurrentImage].m_PresentCompleteSemaphore;
 
-        auto r = Device::VkDevice().acquireNextImageKHR(
+        auto r =  device_->getDevice().acquireNextImageKHR(
             handle,
             std::numeric_limits<uint64_t>::max(),
             sem,

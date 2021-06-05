@@ -26,7 +26,7 @@ namespace RxCore
             vv.data()
         };
 
-        auto ds = Device::VkDevice().allocateDescriptorSets(dsai);
+        auto ds =  device_->getDevice().allocateDescriptorSets(dsai);
         if (ds.empty()) {
             return nullptr;
             //spdlog::critical("Unable to allocate DescriptorSet");
@@ -58,7 +58,7 @@ namespace RxCore
         };
         dsai.pNext = &dsvdcai;
 
-        auto ds = Device::VkDevice().allocateDescriptorSets(dsai);
+        auto ds =  device_->getDevice().allocateDescriptorSets(dsai);
         if (ds.empty()) {
             return nullptr;
             //spdlog::critical("Unable to allocate DescriptorSet");

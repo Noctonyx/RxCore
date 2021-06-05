@@ -18,7 +18,7 @@
 
 namespace RxCore
 {
-    Device * Device::context_ = nullptr;
+    //Device * Device::context_ = nullptr;
 
     Device::Device(SDL_Window * window)
     {
@@ -31,7 +31,8 @@ namespace RxCore
         allocator_info.physicalDevice = physicalDevice->GetHandle();
         allocator_info.device = handle_;
         allocator_info.instance = instance->GetHandle();
-        allocator_info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT | VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+        allocator_info.flags =
+            VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT | VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
 #if _DEBUG
         VmaRecordSettings rs;
@@ -47,12 +48,12 @@ namespace RxCore
 #endif
         ::VkSurfaceKHR surface_khr;
         // vk::Win32SurfaceCreateInfoKHR
-        if(!SDL_Vulkan_CreateSurface(window, static_cast<VkInstance>(instance->GetHandle()), &surface_khr)) {
-        //if (glfwCreateWindowSurface(static_cast<VkInstance>(instance->GetHandle()), window, nullptr,
-          //                          &surface_khr) != VK_SUCCESS) {
+        if (!SDL_Vulkan_CreateSurface(window, static_cast<VkInstance>(instance->GetHandle()), &surface_khr)) {
+            //if (glfwCreateWindowSurface(static_cast<VkInstance>(instance->GetHandle()), window, nullptr,
+            //                          &surface_khr) != VK_SUCCESS) {
             spdlog::critical("Failed to created the window surface!");
         }
-        Device::context_ = this;
+        //Device::context_ = this;
 
         surface_ = surface_khr;
         getSurfaceDetails();
@@ -79,10 +80,12 @@ namespace RxCore
     {
         graphicsQueue_ =
             std::make_shared<Queue>(
+                this,
                 handle_.getQueue(physicalDevice->GetGraphicsQueueFamily(), 0),
                 physicalDevice->GetGraphicsQueueFamily());
         if (physicalDevice->GetComputeQueueFamily() != physicalDevice->GetGraphicsQueueFamily()) {
             computeQueue_ = std::make_shared<Queue>(
+                this,
                 handle_.getQueue(physicalDevice->GetComputeQueueFamily(), 0),
                 physicalDevice->GetComputeQueueFamily());
         } else {
@@ -93,6 +96,7 @@ namespace RxCore
             if (physicalDevice->GetTransferQueueFamily() !=
                 physicalDevice->GetComputeQueueFamily()) {
                 transferQueue_ = std::make_shared<Queue>(
+                    this,
                     handle_.getQueue(physicalDevice->GetTransferQueueFamily(), 0),
                     physicalDevice->GetTransferQueueFamily());
             } else {
@@ -295,7 +299,7 @@ namespace RxCore
             src_stage = vk::PipelineStageFlagBits::eTopOfPipe;
             dest_stage = vk::PipelineStageFlagBits::eTransfer;
         } else if (image->currentLayout_ == vk::ImageLayout::eTransferDstOptimal &&
-            dstLayout == vk::ImageLayout::eShaderReadOnlyOptimal) {
+                   dstLayout == vk::ImageLayout::eShaderReadOnlyOptimal) {
             imb.setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
             imb.setSrcAccessMask(vk::AccessFlagBits::eTransferRead);
             src_stage = vk::PipelineStageFlagBits::eTransfer;
@@ -338,7 +342,8 @@ namespace RxCore
 
         cb->copyBufferToImage(
             src, dst, extent, layerCount, baseArrayLayer,
-            mipLevel);
+            mipLevel
+        );
         cb->imageTransition(dst, destLayout, mipLevel);
         cb->end();
         cb->submitAndWait();
@@ -377,7 +382,8 @@ namespace RxCore
         VmaAllocationInfo alloc_info;
         vmaCreateBuffer(
             allocator, &buffer_info, &allocation_create_info, &buffer, &allocation,
-            &alloc_info);
+            &alloc_info
+        );
 
         //assert(res == VK_SUCCESS );
 
@@ -505,10 +511,12 @@ namespace RxCore
 
         vmaCreateImage(
             allocator, reinterpret_cast<VkImageCreateInfo *>(&ici), &alloc_info, &image,
-            &allocation, nullptr);
+            &allocation, nullptr
+        );
 
         auto i = std::make_shared<Image>(
-            this, image, format, std::make_shared<Allocation>(allocator, allocation), extent);
+            this, image, format, std::make_shared<Allocation>(allocator, allocation), extent
+        );
 
         return i;
     }
@@ -519,8 +527,9 @@ namespace RxCore
             {
                 {}, static_cast<uint32_t>(bytes.size() * 4),
                 bytes.data()
-            });
-        return std::make_shared<Shader>(sm);
+            }
+        );
+        return std::make_shared<Shader>(this, sm);
     }
 
 #if 0
@@ -637,7 +646,8 @@ namespace RxCore
         dpci.setPoolSizeCount(static_cast<uint32_t>(poolSizes.size()))
             .setFlags(
                 vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet |
-                vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind)
+                vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind
+            )
             .setPPoolSizes(poolSizes.data())
             .setMaxSets(max);
 
@@ -680,7 +690,7 @@ namespace RxCore
 
     std::shared_ptr<Buffer> Device::createStagingBuffer(size_t size, const void * data)
     {
-        VkBufferCreateInfo buffer_info {
+        VkBufferCreateInfo buffer_info{
             VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, size,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT
         };
@@ -700,6 +710,7 @@ namespace RxCore
 
         return buf;
     }
+
 #if 0
     std::shared_ptr<Memory> VulkanContext::allocateMemory(
         const vk::MemoryPropertyFlags memFlags,
@@ -711,6 +722,7 @@ namespace RxCore
         return std::make_shared<Memory>(handle_, h);
     }
 #endif
+
     RxUtil::Hash Device::getHash(const vk::SamplerCreateInfo & sci) const
     {
         RxUtil::Hasher h;
@@ -803,7 +815,7 @@ namespace RxCore
 
             if (binding.pImmutableSamplers &&
                 (binding.descriptorType == vk::DescriptorType::eCombinedImageSampler ||
-                    binding.descriptorType == vk::DescriptorType::eSampler)) {
+                 binding.descriptorType == vk::DescriptorType::eSampler)) {
                 for (uint32_t j = 0; j < binding.descriptorCount; j++) {
                     //RxUtil::Hasher hash;
                     auto hh = getHashForSampler(binding.pImmutableSamplers[j]);
@@ -914,7 +926,7 @@ namespace RxCore
     void Device::getSurfaceDetails()
     {
         auto result = physicalDevice->GetHandle().getSurfaceCapabilitiesKHR(surface_, &capabilities_);
-        if(result != vk::Result::eSuccess) {
+        if (result != vk::Result::eSuccess) {
             throw std::exception("Unable to get surface capabilities");
         }
 
@@ -925,7 +937,7 @@ namespace RxCore
     void Device::updateSurfaceCapabilities()
     {
         auto result = physicalDevice->GetHandle().getSurfaceCapabilitiesKHR(surface_, &capabilities_);
-        if(result != vk::Result::eSuccess) {
+        if (result != vk::Result::eSuccess) {
             throw std::exception("Unable to get surface capabilities");
         }
     }
@@ -934,7 +946,7 @@ namespace RxCore
     {
         vk::SurfaceFormatKHR selected_format = vk::Format::eUndefined;
 
-        for (auto& f : formats_) {
+        for (auto & f : formats_) {
             if (f.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear && f.format == vk::Format::eB8G8R8A8Unorm) {
                 selected_format = f.format;
                 break;
@@ -954,7 +966,7 @@ namespace RxCore
               */
         selectedPresentationMode_ = vk::PresentModeKHR::eFifo;
 
-        for (auto& pm : presentationModes_) {
+        for (auto & pm : presentationModes_) {
             if (pm == vk::PresentModeKHR::eMailbox) {
                 selectedPresentationMode_ = pm;
                 break;
@@ -1027,7 +1039,8 @@ namespace RxCore
             image_count,
             sc,
             selectedFormat_,
-            capabilities_.currentExtent);
+            capabilities_.currentExtent
+        );
 
         return swo;
     }
@@ -1040,5 +1053,35 @@ namespace RxCore
     std::shared_ptr<Queue> Device::getTransferQueue() const
     {
         return transferQueue_;
+    }
+
+    vk::Semaphore Device::createSemaphore() const
+    {
+        return handle_.createSemaphore({});
+    }
+
+    void Device::destroySemaphore(vk::Semaphore s) const
+    {
+        handle_.destroySemaphore(s);
+    }
+
+    vk::Fence Device::createFence() const
+    {
+        return handle_.createFence({});
+    }
+
+    void Device::destroyFence(vk::Fence f) const
+    {
+        handle_.destroyFence(f);
+    }
+
+    vk::Result Device::waitForFence(vk::Fence f) const
+    {
+        return handle_.waitForFences({f}, true, MAXUINT64);
+    }
+
+    vk::Result Device::getFenceStatus(vk::Fence f) const
+    {
+        return handle_.getFenceStatus(f);
     }
 } // namespace RXCore

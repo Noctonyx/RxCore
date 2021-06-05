@@ -8,13 +8,16 @@
 
 namespace RxCore
 {
-    Queue::Queue(const vk::Queue queue, uint32_t family) : handle(queue), family_(family)
+    Queue::Queue(Device * device, const vk::Queue queue, uint32_t family)
+        : device_(device)
+          , handle(queue)
+          , family_(family)
     {}
 
     Queue::~Queue()
     {
-        for (auto & [fence, data]: resources_) {
-            Device::VkDevice().destroyFence(fence);
+        for (auto &[fence, data]: resources_) {
+            device_->destroyFence(fence);
         }
 
         while (!resources_.empty()) {
@@ -27,13 +30,13 @@ namespace RxCore
         std::vector<vk::CommandBuffer> buffer_handles = {buffer->Handle()};
 
         vk::SubmitInfo si{nullptr, nullptr, buffer_handles};
-        auto fence = Device::VkDevice().createFence({});
+        auto fence = device_->createFence();
         handle.submit(si, fence);
 
-        const auto result = Device::VkDevice().waitForFences(1, &fence, true, MAXUINT64);
+        const auto result = device_->waitForFence(fence);
         assert(result == vk::Result::eSuccess);
 
-        Device::VkDevice().destroyFence(fence);
+        device_->destroyFence(fence);
     }
 
     void Queue::Submit(std::vector<std::shared_ptr<PrimaryCommandBuffer>> buffs,
@@ -41,14 +44,16 @@ namespace RxCore
                        std::vector<vk::PipelineStageFlags> waitStages,
                        std::vector<vk::Semaphore> signalSemaphores)
     {
-        auto fence = Device::VkDevice().createFence({});
+        auto fence = device_->createFence();
 
         std::vector<vk::CommandBuffer> buffer_handles(buffs.size());
 
-        std::ranges::transform(buffs, buffer_handles.begin(),
-                               [](std::shared_ptr<PrimaryCommandBuffer> & b) {
-                                   return b->Handle();
-                               });
+        std::ranges::transform(
+            buffs, buffer_handles.begin(),
+            [](std::shared_ptr<PrimaryCommandBuffer> & b) {
+                return b->Handle();
+            }
+        );
 
         assert(waitStages.size() == waitSems.size());
 
@@ -60,12 +65,12 @@ namespace RxCore
     void Queue::ReleaseCompleted()
     {
         while (!resources_.empty()) {
-            auto & [fence, data] = resources_.front();
+            auto &[fence, data] = resources_.front();
 
-            auto fs = Device::VkDevice().getFenceStatus(fence);
+            auto fs = device_->getFenceStatus(fence);
             if (fs == vk::Result::eSuccess) {
                 resources_.pop_front();
-                Device::VkDevice().destroyFence(fence);
+                device_->destroyFence(fence);
             } else {
                 break;
             }

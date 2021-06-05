@@ -257,13 +257,13 @@ namespace RxCore
             nullptr, nullptr,
             handle_
         };
-        auto fence = Device::VkDevice().createFence({});
+        auto fence = device_->createFence();
         queue->GetHandle().submit(si, fence);
 
-        const auto result = Device::VkDevice().waitForFences(1, &fence, true, MAXUINT64);
+        const auto result = device_->waitForFence(fence);
         assert(result == vk::Result::eSuccess);
 
-        Device::VkDevice().destroyFence(fence);
+        device_->destroyFence(fence);
         buffers_.clear();
     }
 

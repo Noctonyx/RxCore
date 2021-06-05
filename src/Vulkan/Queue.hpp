@@ -17,7 +17,7 @@ namespace RxCore
     class Queue
     {
     public:
-        Queue(const vk::Queue queue, uint32_t queueFamily);
+        Queue(Device * device, const vk::Queue queue, uint32_t queueFamily);
         ~Queue();
 
         void ReleaseCompleted();
@@ -27,13 +27,13 @@ namespace RxCore
                     std::vector<vk::PipelineStageFlags> waitStages,
                     std::vector<vk::Semaphore> signalSemaphores);
 
-
         uint32_t family() const
         {
             return family_;
         }
 
     private:
+        Device * device_;
         std::deque<std::tuple<vk::Fence, std::vector<std::shared_ptr<PrimaryCommandBuffer>>>>
             resources_;
         // vk::Fence fence_;

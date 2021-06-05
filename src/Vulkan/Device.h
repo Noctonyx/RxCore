@@ -34,7 +34,7 @@ namespace RxCore
     class Device
     {
     protected:
-        static Device * context_;
+        //static Device * context_;
 
     public:
         Device(SDL_Window * window);
@@ -51,12 +51,12 @@ namespace RxCore
         {
             return context_;
         }
-#endif
+
         static vk::Device VkDevice()
         {
             return context_->getDevice();
         }
-
+#endif
         void WaitIdle() const;
 
         std::shared_ptr<DescriptorPool> CreateDescriptorPool(
@@ -87,8 +87,14 @@ namespace RxCore
         void selectPresentationQueueFamily();
 
     public:
+        [[nodiscard]] vk::Semaphore createSemaphore() const;
+        void destroySemaphore(vk::Semaphore s) const;
+        [[nodiscard]] std::shared_ptr<Queue> getTransferQueue() const;
 
-        std::shared_ptr<Queue> getTransferQueue() const;
+        vk::Fence createFence() const;
+        void destroyFence(vk::Fence f) const;
+        vk::Result waitForFence(vk::Fence f) const;
+        vk::Result getFenceStatus(vk::Fence f) const;
 #if 0
         std::shared_ptr<Image> Create2DImage(
             vk::Format format,
