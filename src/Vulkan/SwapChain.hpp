@@ -18,7 +18,7 @@ namespace RxCore
         };
 
     public:
-        SwapChain(
+        SwapChain( Device * device,
             uint32_t image_count,
             vk::SwapchainKHR h,
             vk::Format format,
@@ -41,6 +41,7 @@ namespace RxCore
     protected:
         void createResources();
     private:
+        Device * device_;
         uint32_t imageCount_;
     public:
         [[nodiscard]] uint32_t imageCount() const

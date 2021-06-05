@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include "Vulk.hpp"
 #include "Memory.h"
@@ -12,7 +13,6 @@ namespace RxCore
 {
     class Instance;
     class PhysicalDevice;
-    class Surface;
     class VertexBuffer;
     class IndexBuffer;
     class Queue;
@@ -23,6 +23,7 @@ namespace RxCore
     class CommandPool;
     class CommandBuffer;
     class Shader;
+    class SwapChain;
 
     struct MemHeapStatus
     {
@@ -75,16 +76,24 @@ namespace RxCore
         void destroyDescriptorPool(DescriptorPool * pool);
 
         //------- Surface
-        void destroySurface(Surface * surface);
-        bool getSurfaceCapabilities(Surface * surface);
-        std::vector<vk::SurfaceFormatKHR> getSurfaceFormats(Surface * surface);
-        std::vector<vk::PresentModeKHR> getSurfacePresentModes(Surface * surface);
-        bool getSurfaceQueueSupport(uint32_t queueFamily, Surface * surface);
+//        void destroySurface(Surface * surface);
+  //      bool getSurfaceCapabilities(Surface * surface);
+//        std::vector<vk::SurfaceFormatKHR> getSurfaceFormats(Surface * surface);
+  //      std::vector<vk::PresentModeKHR> getSurfacePresentModes(Surface * surface);
+    //    bool getSurfaceQueueSupport(uint32_t queueFamily, Surface * surface);
 
+        std::unique_ptr<SwapChain> createSwapChain();
+        //void updateSurfaceCapabilities();
+        [[nodiscard]] uint32_t getPresentQueueFamily() const;
         //std::unique_ptr<SwapChain> createSwapChain(Surface * surface, )
         //---------
-
-
+        void updateSurfaceCapabilities();
+    protected:
+        void getSurfaceDetails();
+        void selectSurfaceFormat();
+        void selectPresentationMode();
+        void selectPresentationQueueFamily();
+    public:
 #if 0
         std::shared_ptr<Image> Create2DImage(
             vk::Format format,
@@ -202,7 +211,7 @@ namespace RxCore
         // Window * window;
         std::unique_ptr<Instance> instance;
         std::shared_ptr<PhysicalDevice> physicalDevice;
-        std::shared_ptr<Surface> surface;
+
         VmaAllocator allocator{};
 
         std::shared_ptr<CommandPool> transferCommandPool_;
@@ -213,10 +222,22 @@ namespace RxCore
 
     private:
         vk::Device handle_;
-
+        //std::shared_ptr<Surface> surface;
+        vk::SurfaceKHR surface_;
         std::unordered_map<RxUtil::Hash, vk::Sampler> samplers_;
         std::unordered_map<RxUtil::Hash, vk::PipelineLayout> pipelineLayouts_;
         std::unordered_map<RxUtil::Hash, vk::DescriptorSetLayout> descriptorSetLayouts_;
+
+        std::optional<uint32_t> presentQueueFamily_{};
+        bool exclusiveQueueSupport_{};
+
+        vk::SurfaceCapabilitiesKHR capabilities_{};
+        std::vector<vk::SurfaceFormatKHR> formats_{};
+        std::vector<vk::PresentModeKHR> presentationModes_{};
+        vk::Format selectedFormat_{};
+        vk::ColorSpaceKHR selectedColorSpace_{};
+        vk::PresentModeKHR selectedPresentationMode_{};
+
 
         RxUtil::Hash getHashForSampler(vk::Sampler) const;
         RxUtil::Hash getHashForDescriptorSetLayout(vk::DescriptorSetLayout) const;

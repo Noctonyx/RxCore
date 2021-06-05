@@ -9,8 +9,6 @@ add_library(RxCore STATIC
     src/Vulkan/Instance.hpp
     src/Vulkan/PhysicalDevice.cpp
     src/Vulkan/PhysicalDevice.hpp
-    src/Vulkan/Surface.cpp
-    src/Vulkan/Surface.hpp
     src/Vulkan/SwapChain.cpp
     src/Vulkan/SwapChain.hpp
     src/Vulkan/CommandBuffer.cpp

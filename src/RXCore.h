@@ -12,7 +12,6 @@
 #include "Vulkan/IndexBuffer.hpp"
 #include "Vulkan/SwapChain.hpp"
 #include "Vulkan/Image.hpp"
-#include "Vulkan/Surface.hpp"
 #include "Vulkan/Pipeline.h"
 #include "Vulkan/CommandBuffer.hpp"
 #include "Vulkan/Shader.h"

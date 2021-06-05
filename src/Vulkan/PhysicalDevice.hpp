@@ -11,7 +11,7 @@ namespace RxCore
     class PhysicalDevice
     {
         friend class Device;
-        friend class Renderer;
+        //friend class Renderer;
 
     public:
         explicit PhysicalDevice(Device * context);

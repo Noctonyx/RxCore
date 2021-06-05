@@ -1,21 +1,23 @@
 #include "Vulk.hpp"
 #include "SwapChain.hpp"
-#include "Surface.hpp"
 #include <tuple>
 #include <vector>
 
 #include "Log.h"
 #include "spdlog/spdlog.h"
 #include <optick/optick.h>
+#include "Device.h"
 
 namespace RxCore
 {
     SwapChain::SwapChain(
+        Device * device,
         uint32_t image_count,
         vk::SwapchainKHR h,
         vk::Format format,
         vk::Extent2D ex)
-        : handle(h)
+        : device_(device)
+        , handle(h)
         , imageCount_(image_count)
         , extent_(ex)
         , imageFormat_(format) { createResources(); }
@@ -36,13 +38,13 @@ namespace RxCore
 
     void SwapChain::createResources()
     {
-        const auto device = Device::VkDevice();
+        //const auto device = Device::VkDevice();
 
         swapChainState_.resize(imageCount_);
-        auto is = device.getSwapchainImagesKHR(handle);
+        auto is = device_->getDevice().getSwapchainImagesKHR(handle);
         for (uint32_t x = 0; x < is.size(); x++) {
             swapChainState_[x].image = is[x];
-            swapChainState_[x].imageView = device.createImageView(
+            swapChainState_[x].imageView = device_->getDevice().createImageView(
                 {
                     {},
                     swapChainState_[x].image,
@@ -68,13 +70,13 @@ namespace RxCore
         imageReadySemaphoreIndex_ = 0;
 
         for (uint32_t i = 0; i < imageCount_; i++) {
-            imageReadySemaphores_[i] = device.createSemaphore({});
+            imageReadySemaphores_[i] = device_->getDevice().createSemaphore({});
             //swapChainState_[i].renderFinishedSemaphore = device.createSemaphore({});
             //m_SwapChainState[i].m_InFlightFence = m_Device.GetVK().createFence({vk::FenceCreateFlagBits::eSignaled});
         }
 
-        device.getQueue(
-            Device::Context()->surface->presentQueueFamily_.value(),
+        device_->getDevice().getQueue(
+            device_->getPresentQueueFamily(),
             0,
             &presentQueue_);
     }
