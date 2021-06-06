@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // MIT License
 //
-// Copyright (c) 2021.  Shane Hyde
+// Copyright (c) 2021-2021.  Shane Hyde (shane@noctonyx.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,8 +55,8 @@ namespace RxCore
     }
 #endif
     ImageView::ImageView(const Device * device, vk::ImageView handle)
-        : device_(device)
-          , handle_(handle)
+        : handle_(handle)
+          , device_(device)
           //, image_(std::move(image))
     {}
 

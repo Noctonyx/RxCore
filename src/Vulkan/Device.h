@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // MIT License
 //
-// Copyright (c) 2021.  Shane Hyde
+// Copyright (c) 2021-2021.  Shane Hyde (shane@noctonyx.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -195,7 +195,7 @@ namespace RxCore
             return handle_;
         };
 
-        size_t getBufferAddress(const Buffer * buffer) const;
+        uint64_t getBufferAddress(const Buffer * buffer) const;
 #if 0
         std::shared_ptr<Memory> allocateMemory(
             const vk::MemoryPropertyFlags memFlags,

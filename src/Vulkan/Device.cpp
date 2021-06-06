@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // MIT License
 //
-// Copyright (c) 2021.  Shane Hyde
+// Copyright (c) 2021-2021.  Shane Hyde (shane@noctonyx.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -1139,7 +1139,7 @@ namespace RxCore
         return std::make_shared<ImageView>(this, h);
     }
 
-    size_t Device::getBufferAddress(const Buffer * buffer) const
+    uint64_t Device::getBufferAddress(const Buffer * buffer) const
     {
         vk::BufferDeviceAddressInfo bdai{};
         bdai.setBuffer(buffer->handle_);

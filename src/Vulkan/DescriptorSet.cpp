@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // MIT License
 //
-// Copyright (c) 2020-2021.  Shane Hyde
+// Copyright (c) 2020-2021.  Shane Hyde (shane@noctonyx.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,8 @@ namespace RxCore
         vk::DescriptorSet newHandle
     )
     //: VulkanResource<DescriptorSet, vk::DescriptorSet>(context)
-        : device_(device)
-        , handle(newHandle)
+        : handle(newHandle)
+        , device_(device)
         , descriptorPool_(std::move(descriptorPool)) {}
 
     DescriptorSet::~DescriptorSet()
