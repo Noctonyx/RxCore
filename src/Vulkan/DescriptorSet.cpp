@@ -1,6 +1,27 @@
+////////////////////////////////////////////////////////////////////////////////
+// MIT License
 //
-// Copyright (c) 2020 - Shane Hyde (shane@noctonyx.com)
+// Copyright (c) 2020-2021.  Shane Hyde
 //
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
 
 #include "DescriptorSet.hpp"
 #include <utility>
@@ -68,7 +89,8 @@ namespace RxCore
     )
     {
         offsets_.resize(std::max(binding + 1, static_cast<uint32_t>(offsets_.size())));
-        auto image_view = image->createImageView(
+        auto image_view = device_->createImageView(
+            image,
             vk::ImageViewType::e2D,
             vk::ImageAspectFlagBits::eColor, 0, 1);
 
@@ -92,7 +114,7 @@ namespace RxCore
 //        images_[binding] = image;
 
         vk::DescriptorImageInfo dii = {
-            sampler, image_view->handle, vk::ImageLayout::eShaderReadOnlyOptimal
+            sampler, image_view->handle_, vk::ImageLayout::eShaderReadOnlyOptimal
         };
         vk::WriteDescriptorSet wds;
         wds.setDescriptorType(type)
@@ -114,7 +136,7 @@ namespace RxCore
     {
         offsets_.resize(std::max(binding + 1, static_cast<uint32_t>(offsets_.size())));
         vk::DescriptorImageInfo dii = {
-            sampler, imageView->handle, layout
+            sampler, imageView->handle_, layout
         };
         if (imageViews_.contains(binding)) {
             imageViews_.erase(binding);
@@ -178,7 +200,7 @@ namespace RxCore
         for (const auto & sampler_view : samplerViews) {
             dii.emplace_back(
                 sampler_view.sampler,
-                sampler_view.imageView->handle,
+                sampler_view.imageView->handle_,
                 vk::ImageLayout::eShaderReadOnlyOptimal);
         }
         std::vector<std::shared_ptr<ImageView>> iviews(samplerViews.size());

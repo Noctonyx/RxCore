@@ -1,3 +1,28 @@
+////////////////////////////////////////////////////////////////////////////////
+// MIT License
+//
+// Copyright (c) 2021.  Shane Hyde
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include <memory>
@@ -24,6 +49,7 @@ namespace RxCore
     class CommandBuffer;
     class Shader;
     class SwapChain;
+    class ImageView;
 
     struct MemHeapStatus
     {
@@ -65,13 +91,6 @@ namespace RxCore
 
         std::shared_ptr<CommandPool> CreateGraphicsCommandPool();
 
-        std::shared_ptr<Image> createImage(
-            const vk::Format format,
-            const vk::Extent3D extent,
-            uint32_t mipLevels,
-            uint32_t layers,
-            vk::ImageUsageFlags usage,
-            vk::ImageType type = vk::ImageType::e2D);
 
         void freeCommandBuffer(CommandBuffer * buf);
         void destroyDescriptorPool(DescriptorPool * pool);
@@ -91,10 +110,29 @@ namespace RxCore
         void destroySemaphore(vk::Semaphore s) const;
         [[nodiscard]] std::shared_ptr<Queue> getTransferQueue() const;
 
+        // --------------------------------
         vk::Fence createFence() const;
         void destroyFence(vk::Fence f) const;
         vk::Result waitForFence(vk::Fence f) const;
         vk::Result getFenceStatus(vk::Fence f) const;
+
+        // ---------------------------------
+        std::shared_ptr<Image> createImage(
+            vk::Format format,
+            vk::Extent3D extent,
+            uint32_t mipLevels,
+            uint32_t layers,
+            vk::ImageUsageFlags usage,
+            vk::ImageType type = vk::ImageType::e2D);
+        void destroyImage(Image * image) const;
+
+        [[nodiscard]] std::shared_ptr<ImageView> createImageView(
+            const std::shared_ptr<Image>& image,
+            vk::ImageViewType viewType,
+            vk::ImageAspectFlagBits aspect,
+            uint32_t baseArrayLayer = 0,
+            uint32_t layerCount = VK_REMAINING_ARRAY_LAYERS) const;
+        void destroyImageView(ImageView * image) const;
 #if 0
         std::shared_ptr<Image> Create2DImage(
             vk::Format format,
@@ -156,6 +194,8 @@ namespace RxCore
         {
             return handle_;
         };
+
+        size_t getBufferAddress(const Buffer * buffer) const;
 #if 0
         std::shared_ptr<Memory> allocateMemory(
             const vk::MemoryPropertyFlags memFlags,
@@ -238,7 +278,6 @@ namespace RxCore
         vk::Format selectedFormat_{};
         vk::ColorSpaceKHR selectedColorSpace_{};
         vk::PresentModeKHR selectedPresentationMode_{};
-
 
         RxUtil::Hash getHashForSampler(vk::Sampler) const;
         RxUtil::Hash getHashForDescriptorSetLayout(vk::DescriptorSetLayout) const;
