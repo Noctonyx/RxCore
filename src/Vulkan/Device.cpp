@@ -189,6 +189,7 @@ namespace RxCore
         // f168.pNext = &dif;
 
         feat.features.depthClamp = true;
+        feat.features.multiDrawIndirect = true;
 
         const std::vector<const char *> list_extensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
