@@ -29,15 +29,11 @@
 #include <optional>
 #include <unordered_map>
 #include "Vulk.hpp"
-#include "Memory.h"
 #include "SDL.h"
-//#include <GLFW/glfw3.h>
 #include "Hasher.h"
 
 namespace RxCore
 {
-    //class Instance;
-    //class PhysicalDevice;
     class VertexBuffer;
     class IndexBuffer;
     class Queue;
@@ -48,7 +44,6 @@ namespace RxCore
     class CommandPool;
     class CommandBuffer;
     class Shader;
-    //class SwapChain;
     class ImageView;
 
     struct MemHeapStatus
@@ -59,9 +54,6 @@ namespace RxCore
 
     class Device
     {
-    protected:
-        //static Device * context_;
-
     public:
         Device(SDL_Window * window);
 
@@ -181,8 +173,7 @@ namespace RxCore
             size_t destOffset = 0) const;
         void transitionImageLayout(
             const std::shared_ptr<Image> & image,
-            VkImageLayout dstLayout)
-        const;
+            VkImageLayout dstLayout) const;
 
         void transferBufferToImage(
             std::shared_ptr<Buffer> src,
@@ -218,6 +209,9 @@ namespace RxCore
             VmaMemoryUsage memType,
             VkDeviceSize size,
             void * data = nullptr);
+
+        void destroyBuffer(VkBuffer buffer) const;
+        void destroyCommandPool(VkCommandPool commandPool) const ;
 
 #if 0
         std::shared_ptr<IndexBuffer> createIndexBuffer(

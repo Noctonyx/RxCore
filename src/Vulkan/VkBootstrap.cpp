@@ -695,6 +695,7 @@ detail::Result<Instance> InstanceBuilder::build() const {
 	detail::setup_pNext_chain(instance_create_info, pNext_chain);
 	for (auto& node : pNext_chain) {
 		assert(node->sType != VK_STRUCTURE_TYPE_APPLICATION_INFO);
+		(void)node;
 	}
 	instance_create_info.flags = info.flags;
 	instance_create_info.pApplicationInfo = &app_info;
@@ -1465,6 +1466,7 @@ detail::Result<Device> DeviceBuilder::build() const {
 	detail::setup_pNext_chain(device_create_info, final_pnext_chain);
 	for (auto& node : final_pnext_chain) {
 		assert(node->sType != VK_STRUCTURE_TYPE_APPLICATION_INFO);
+		(void)node;
 	}
 
 	device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -1715,6 +1717,7 @@ detail::Result<Swapchain> SwapchainBuilder::build() const {
 	detail::setup_pNext_chain(swapchain_create_info, info.pNext_chain);
 	for (auto& node : info.pNext_chain) {
 		assert(node->sType != VK_STRUCTURE_TYPE_APPLICATION_INFO);
+		(void)node;
 	}
 	swapchain_create_info.flags = info.create_flags;
 	swapchain_create_info.surface = info.surface;
@@ -1902,8 +1905,8 @@ SwapchainBuilder& SwapchainBuilder::set_composite_alpha_flags(VkCompositeAlphaFl
 }
 
 void SwapchainBuilder::add_desired_formats(std::vector<VkSurfaceFormatKHR>& formats) const {
-	formats.push_back({ VK_FORMAT_B8G8R8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR });
-	formats.push_back({ VK_FORMAT_R8G8B8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR });
+	formats.push_back({ VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR });
+	formats.push_back({ VK_FORMAT_R8G8B8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR });
 }
 void SwapchainBuilder::add_desired_present_modes(std::vector<VkPresentModeKHR>& modes) const {
 	modes.push_back(VK_PRESENT_MODE_MAILBOX_KHR);

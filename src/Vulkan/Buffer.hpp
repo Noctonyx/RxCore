@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // MIT License
 //
-// Copyright (c) 2021.  Shane Hyde
+// Copyright (c) 2021-2021.  Shane Hyde (shane@noctonyx.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -84,10 +84,6 @@ namespace RxCore
         uint64_t getDeviceAddress() const
         {
             return device_->getBufferAddress(this);
-            //vk::BufferDeviceAddressInfo bdai{};
-            //bd/ai.setBuffer(handle_);
-
-            //return device_->getDevice().getBufferAddress(bdai);
         }
         
     private:

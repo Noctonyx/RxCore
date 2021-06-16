@@ -42,7 +42,8 @@ namespace RxCore
 
     CommandPool::~CommandPool()
     {
-        vkDestroyCommandPool(device_->getDevice(), handle, nullptr);
+        device_->destroyCommandPool(handle);
+        //vkDestroyCommandPool(device_->getDevice(), handle, nullptr);
     }
 
     std::shared_ptr<PrimaryCommandBuffer> CommandPool::GetPrimaryCommandBuffer()

@@ -1,3 +1,28 @@
+////////////////////////////////////////////////////////////////////////////////
+// MIT License
+//
+// Copyright (c) 2021.  Shane Hyde (shane@noctonyx.com)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 #include <algorithm>
 #include "CommandBuffer.hpp"
 #include "Buffer.hpp"
@@ -22,7 +47,6 @@ namespace RxCore
         cbi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
         vkBeginCommandBuffer(handle_, &cbi);
-        //handle_.begin({{}, nullptr});
     }
 
     void SecondaryCommandBuffer::begin(VkRenderPass renderPass, uint32_t subPass)
@@ -39,12 +63,10 @@ namespace RxCore
         cbii.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
         cbii.renderPass = renderPass;
         cbii.subpass = subPass;
-        //cbii.setRenderPass(renderPass).setSubpass(subPass);
         cbbi.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
         cbbi.pInheritanceInfo = &cbii;
 
         vkBeginCommandBuffer(handle_, &cbbi);
-        //handle_.begin(cbbi);
     }
 
     void CommandBuffer::end()
@@ -72,7 +94,6 @@ namespace RxCore
 
         frameBuffers_.emplace(std::move(fb));
         vkCmdBeginRenderPass(handle_, &rpbi, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-        //handle_.beginRenderPass(rpbi, VkSubpassContents::eSecondaryCommandBuffers);
     }
 
     void CommandBuffer::setViewport(
@@ -201,32 +222,6 @@ namespace RxCore
         vkCmdDraw(handle_, vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
-#if 0
-    void CommandBuffer::PushBuffer(
-        const PipelineLayout & layout,
-        uint32_t binding,
-        std::shared_ptr<Buffer> buffer,
-        VkDescriptorType type,
-        uint32_t set
-    )
-    {
-        VkDescriptorBufferInfo bi = buffer->GetDescriptor();
-
-        VkWriteDescriptorSet descriptors[1];
-        descriptors[0].dstBinding = binding;
-        descriptors[0].descriptorCount = 1;
-        descriptors[0].descriptorType = type;
-        descriptors[0].pBufferInfo = &bi;
-
-        handle_.pushDescriptorSetKHR(
-            VkPipelineBindPoint::eGraphics,
-            layout.handle,
-            set,
-            1,
-            descriptors);
-        _buffers.emplace(std::move(buffer));
-    }
-#endif
     void PrimaryCommandBuffer::executeSecondaries(uint16_t sequence)
     {
         OPTICK_EVENT("Execute 2nd")
