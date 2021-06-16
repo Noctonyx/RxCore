@@ -5,7 +5,7 @@
 #ifndef RX_VULK_HPP
 #define RX_VULK_HPP
 
-#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+//#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 //#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 
 #include "VkBootstrap.h"

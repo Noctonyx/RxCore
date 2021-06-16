@@ -24,9 +24,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "Device.h"
-#include "Instance.hpp"
-#include "PhysicalDevice.hpp"
-#include "SwapChain.hpp"
 #include "CommandPool.hpp"
 #include "CommandBuffer.hpp"
 #include "Buffer.hpp"
@@ -217,7 +214,11 @@ namespace RxCore
             vkb_device.get_queue_index(vkb::QueueType::transfer).value());
 
         vkb::SwapchainBuilder swapchain_builder{vkb_device};
-        auto swap_ret = swapchain_builder.build();
+        auto swap_ret = swapchain_builder
+                        .set_desired_format({
+                            VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+                        })
+                        .build();
 
         swapChain = swap_ret.value();
         auto r = swapChain.get_image_views();
@@ -405,7 +406,7 @@ namespace RxCore
 
         swapChain.destroy_image_views(swapChainImageViews);
 
-        for (auto s : swapChainSemaphores) {
+        for (auto s: swapChainSemaphores) {
             destroySemaphore(s);
         }
 
@@ -472,7 +473,7 @@ namespace RxCore
         pi.swapchainCount = 1;
         pi.pSwapchains = &swapChain.swapchain;
         pi.pImageIndices = &swapChainIndex;
-        
+
         auto r = vkQueuePresentKHR(presentQueue, &pi);
 
         if (r == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -490,6 +491,7 @@ namespace RxCore
     {
         if (swapChainOutofDate) {
             replaceSwapChain();
+            swapChainOutofDate = false;
             return true;
         }
         return false;
@@ -503,7 +505,11 @@ namespace RxCore
 
         vkb::SwapchainBuilder scb{vkb_device};
         scb.set_old_swapchain(swapChain);
-        auto sb = scb.build();
+        auto sb = scb
+                  .set_desired_format({
+                      VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+                  })
+                  .build();
         vkb::destroy_swapchain(swapChain);
 
         swapChain = sb.value();
