@@ -51,6 +51,8 @@ add_library(RxCore STATIC
     src/Window.hpp
     src/Events.h
     src/Events.cpp
+    src/Vulkan/VkBootstrap.cpp
+    #src/Vulkan/volk.c
 )
 
 target_compile_options(RxCore PUBLIC -DNOMINMAX)

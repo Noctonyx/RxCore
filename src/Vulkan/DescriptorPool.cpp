@@ -30,25 +30,27 @@
 
 namespace RxCore
 {
-    DescriptorPool::DescriptorPool(Device * device, vk::DescriptorPool new_handle)
+    DescriptorPool::DescriptorPool(Device * device, VkDescriptorPool new_handle)
         : handle(new_handle)
-        , device_(device)
-    {
-    }
+        , device_(device) { }
 
-    std::shared_ptr<DescriptorSet> DescriptorPool::allocateDescriptorSet(vk::DescriptorSetLayout layout)
+    std::shared_ptr<DescriptorSet> DescriptorPool::allocateDescriptorSet(
+        VkDescriptorSetLayout layout)
     {
         OPTICK_EVENT()
-        std::vector<vk::DescriptorSetLayout> vv(1, VkDescriptorSetLayout(layout));
+        std::vector<VkDescriptorSetLayout> vv(1, VkDescriptorSetLayout(layout));
 
-        vk::DescriptorSetAllocateInfo dsai{
-            handle,
-            1,
-            vv.data()
-        };
+        VkDescriptorSetAllocateInfo dsai{};
+        dsai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        dsai.descriptorPool = handle;
+        dsai.descriptorSetCount = 1;
+        dsai.pSetLayouts = vv.data();
 
-        auto ds =  device_->getDevice().allocateDescriptorSets(dsai);
-        if (ds.empty()) {
+        std::vector<VkDescriptorSet> ds(1);
+
+        auto res = vkAllocateDescriptorSets(device_->getDevice(), &dsai, ds.data());
+
+        if (res != VK_SUCCESS) {
             return nullptr;
             //spdlog::critical("Unable to allocate DescriptorSet");
             //throw std::exception("Unable to allocate DescriptorSet");
@@ -56,31 +58,35 @@ namespace RxCore
         return std::make_shared<DescriptorSet>(device_, shared_from_this(), ds[0]);
     }
 
-    void DescriptorPool::handBackDescriptorSet(vk::DescriptorSet descriptor_set)
+    void DescriptorPool::handBackDescriptorSet(VkDescriptorSet descriptor_set)
     {
         OPTICK_EVENT()
-        device_->getDevice().freeDescriptorSets(handle, descriptor_set);
+        vkFreeDescriptorSets(device_->getDevice(), handle, 1, &descriptor_set);
     }
 
     std::shared_ptr<DescriptorSet> DescriptorPool::allocateDescriptorSet(
-        vk::DescriptorSetLayout layout,
+        VkDescriptorSetLayout layout,
         const std::vector<uint32_t> & counts)
     {
         OPTICK_EVENT()
-        std::vector<vk::DescriptorSetLayout> vv(1, VkDescriptorSetLayout(layout));
+        std::vector<VkDescriptorSetLayout> vv(1, VkDescriptorSetLayout(layout));
 
-        vk::DescriptorSetVariableDescriptorCountAllocateInfo dsvdcai{};
-        dsvdcai.setDescriptorCounts(counts);
+        VkDescriptorSetVariableDescriptorCountAllocateInfo dsvdcai{};
+        dsvdcai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+        dsvdcai.descriptorSetCount = static_cast<uint32_t>(counts.size());
+        dsvdcai.pDescriptorCounts = counts.data();
 
-        vk::DescriptorSetAllocateInfo dsai{
-            handle,
-            1,
-            vv.data()
-        };
+        VkDescriptorSetAllocateInfo dsai{};
+        dsai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        dsai.descriptorPool = handle;
+        dsai.descriptorSetCount = 1;
+        dsai.pSetLayouts = vv.data();
         dsai.pNext = &dsvdcai;
 
-        auto ds =  device_->getDevice().allocateDescriptorSets(dsai);
-        if (ds.empty()) {
+        std::vector<VkDescriptorSet> ds(1);
+
+        auto res = vkAllocateDescriptorSets(device_->getDevice(), &dsai, ds.data());
+        if (res != VK_SUCCESS) {
             return nullptr;
             //spdlog::critical("Unable to allocate DescriptorSet");
             //throw std::exception("Unable to allocate DescriptorSet");
@@ -95,7 +101,7 @@ namespace RxCore
         OPTICK_EVENT()
     }
 
-    std::shared_ptr<DescriptorSet> DescriptorPoolGroup::getDescriptorSet(vk::DescriptorSetLayout layout)
+    std::shared_ptr<DescriptorSet> DescriptorPoolGroup::getDescriptorSet(VkDescriptorSetLayout layout)
     {
         OPTICK_EVENT();
 
@@ -111,7 +117,7 @@ namespace RxCore
 
         try {
             ds = descriptorPool->allocateDescriptorSet(layout);
-        } catch (vk::OutOfPoolMemoryError  ) {
+        } catch (VkOutOfPoolMemoryError  ) {
             ds = nullptr;
         }
         if (ds) {
@@ -128,7 +134,7 @@ namespace RxCore
     }
 
     std::shared_ptr<DescriptorSet> DescriptorPoolGroup::getDescriptorSet(
-        vk::DescriptorSetLayout layout,
+        VkDescriptorSetLayout layout,
         const std::vector<uint32_t> & counts)
     {
         OPTICK_EVENT()

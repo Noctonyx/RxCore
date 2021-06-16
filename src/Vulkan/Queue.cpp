@@ -2,21 +2,21 @@
 // Created by shane on 28/12/2020.
 //
 
+#include <algorithm>
 #include "Queue.hpp"
 #include "Device.h"
 #include "CommandBuffer.hpp"
 
 namespace RxCore
 {
-    Queue::Queue(Device * device, const vk::Queue queue, uint32_t family)
+    Queue::Queue(Device * device, const VkQueue queue, uint32_t family)
         : device_(device)
-          , handle(queue)
-          , family_(family)
-    {}
+        , handle(queue)
+        , family_(family) {}
 
     Queue::~Queue()
     {
-        for (auto &[fence, data]: resources_) {
+        for (auto & [fence, data]: resources_) {
             device_->destroyFence(fence);
         }
 
@@ -27,48 +27,67 @@ namespace RxCore
 
     void Queue::submitAndWait(std::shared_ptr<PrimaryCommandBuffer> & buffer) const
     {
-        std::vector<vk::CommandBuffer> buffer_handles = {buffer->Handle()};
+        std::vector<VkCommandBuffer> buffer_handles = {buffer->Handle()};
 
-        vk::SubmitInfo si{nullptr, nullptr, buffer_handles};
+        VkSubmitInfo si{};
+        si.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        si.commandBufferCount = static_cast<uint32_t>(buffer_handles.size());
+        si.pCommandBuffers = buffer_handles.data();
+
+        //        VkSubmitInfo si{nullptr, nullptr, buffer_handles};
         auto fence = device_->createFence();
-        handle.submit(si, fence);
+
+        vkQueueSubmit(handle, 1, &si, fence);
 
         const auto result = device_->waitForFence(fence);
-        assert(result == vk::Result::eSuccess);
+        assert(result == VK_SUCCESS);
 
         device_->destroyFence(fence);
     }
 
     void Queue::Submit(std::vector<std::shared_ptr<PrimaryCommandBuffer>> buffs,
-                       std::vector<vk::Semaphore> waitSems,
-                       std::vector<vk::PipelineStageFlags> waitStages,
-                       std::vector<vk::Semaphore> signalSemaphores)
+                       std::vector<VkSemaphore> waitSems,
+                       std::vector<VkPipelineStageFlags> waitStages,
+                       std::vector<VkSemaphore> signalSemaphores)
     {
         auto fence = device_->createFence();
 
-        std::vector<vk::CommandBuffer> buffer_handles(buffs.size());
+        std::vector<VkCommandBuffer> buffer_handles(buffs.size());
 
         std::ranges::transform(
             buffs, buffer_handles.begin(),
-            [](std::shared_ptr<PrimaryCommandBuffer> & b) {
+            [](std::shared_ptr<PrimaryCommandBuffer> & b)
+            {
                 return b->Handle();
             }
         );
 
         assert(waitStages.size() == waitSems.size());
 
-        vk::SubmitInfo si{waitSems, waitStages, buffer_handles, signalSemaphores};
+        VkSubmitInfo si{};
+        si.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        si.waitSemaphoreCount = waitSems.size();
+        si.pWaitSemaphores = waitSems.data();
+        si.pWaitDstStageMask = waitStages.data();
+        si.commandBufferCount = buffer_handles.size();
+        si.pCommandBuffers = buffer_handles.data();
+        si.signalSemaphoreCount = signalSemaphores.size();
+        si.pSignalSemaphores = signalSemaphores.data();
+
+        //VkSubmitInfo si{waitSems, waitStages, buffer_handles, signalSemaphores};
+
         resources_.emplace_back(fence, std::move(buffs));
-        handle.submit(si, fence);
+
+        vkQueueSubmit(handle, 1, &si, fence);
     }
 
     void Queue::ReleaseCompleted()
     {
         while (!resources_.empty()) {
-            auto &[fence, data] = resources_.front();
+            auto & [fence, data] = resources_.front();
 
             auto fs = device_->getFenceStatus(fence);
-            if (fs == vk::Result::eSuccess) {
+            if (fs == VK_SUCCESS) {
                 resources_.pop_front();
                 device_->destroyFence(fence);
             } else {
@@ -77,7 +96,7 @@ namespace RxCore
         }
     }
 
-    const vk::Queue Queue::GetHandle() const
+    VkQueue Queue::GetHandle() const
     {
         return handle;
     }

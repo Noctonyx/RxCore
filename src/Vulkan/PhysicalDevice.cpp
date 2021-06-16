@@ -4,6 +4,7 @@
 
 namespace RxCore
 {
+#if 0
     PhysicalDevice::PhysicalDevice(Device * context)
         : Context(context)
     {
@@ -32,27 +33,27 @@ namespace RxCore
 
     PhysicalDevice::~PhysicalDevice() = default;
 
-    vk::FormatProperties PhysicalDevice::GetFormatProperties(const vk::Format format) const
+    VkFormatProperties PhysicalDevice::GetFormatProperties(const VkFormat format) const
     {
         auto p = handle_.getFormatProperties(format);
         return p;
     }
 
-    vk::Format PhysicalDevice::getSupportedDepthFormat(bool checkSamplingSupport) const
+    VkFormat PhysicalDevice::getSupportedDepthFormat(bool checkSamplingSupport) const
     {
-        std::vector<vk::Format> formats = {
-            vk::Format::eD24UnormS8Uint, vk::Format::eD32SfloatS8Uint, vk::Format::eD32Sfloat,
-            vk::Format::eD16UnormS8Uint, vk::Format::eD16Unorm,
+        std::vector<VkFormat> formats = {
+            VkFormat::eD24UnormS8Uint, VkFormat::eD32SfloatS8Uint, VkFormat::eD32Sfloat,
+            VkFormat::eD16UnormS8Uint, VkFormat::eD16Unorm,
         };
 
         for (auto & format: formats) {
-            vk::FormatProperties format_properties = handle_.getFormatProperties(format);
+            VkFormatProperties format_properties = handle_.getFormatProperties(format);
 
             if (format_properties.optimalTilingFeatures &
-                vk::FormatFeatureFlagBits::eDepthStencilAttachment) {
+                VkFormatFeatureFlagBits::eDepthStencilAttachment) {
                 if (checkSamplingSupport) {
                     if (!(format_properties.optimalTilingFeatures &
-                          vk::FormatFeatureFlagBits::eSampledImage)) {
+                          VkFormatFeatureFlagBits::eSampledImage)) {
                         continue;
                     }
                 }
@@ -60,12 +61,12 @@ namespace RxCore
             }
         }
         spdlog::critical("Failed to find suitable depth format ");
-        return vk::Format::eUndefined;
+        return VkFormat::eUndefined;
     }
 
     uint32_t PhysicalDevice::GetMemoryIndex(
         uint32_t memoryTypeBits,
-        vk::MemoryPropertyFlags search) const
+        VkMemoryPropertyFlags search) const
     {
         for (uint32_t i = 0; i != memoryProperties_.memoryTypeCount; ++i, memoryTypeBits >>= 1) {
             if (memoryTypeBits & 1) {
@@ -79,35 +80,35 @@ namespace RxCore
         return ~0U;
     }
 
-    vk::Format PhysicalDevice::GetSupportedFormat(
-        std::vector<vk::Format> & candidates,
-        vk::ImageTiling tiling,
-        vk::FormatFeatureFlagBits flags) const
+    VkFormat PhysicalDevice::GetSupportedFormat(
+        std::vector<VkFormat> & candidates,
+        VkImageTiling tiling,
+        VkFormatFeatureFlagBits flags) const
     {
         for (auto & candidate: candidates) {
             // VkFormatProperties Props;
             auto p = handle_.getFormatProperties(candidate);
-            if (tiling == vk::ImageTiling::eOptimal && (p.optimalTilingFeatures & flags) == flags) {
+            if (tiling == VkImageTiling::eOptimal && (p.optimalTilingFeatures & flags) == flags) {
                 return candidate;
             }
-            if (tiling == vk::ImageTiling::eLinear && (p.linearTilingFeatures & flags) == flags) {
+            if (tiling == VkImageTiling::eLinear && (p.linearTilingFeatures & flags) == flags) {
                 return candidate;
             }
         }
         spdlog::error("Failed to find supported format! Returning VK_FORMAT_D32_SFLOAT by default");
-        return vk::Format::eD32Sfloat;
+        return VkFormat::eD32Sfloat;
     }
 
-    vk::PhysicalDevice PhysicalDevice::ChooseBestDevice(std::vector<vk::PhysicalDevice> & pds)
+    VkPhysicalDevice PhysicalDevice::ChooseBestDevice(std::vector<VkPhysicalDevice> & pds)
     {
         // return pds[0];
 
-        auto ScoreDevice = [](vk::PhysicalDevice dev)
+        auto ScoreDevice = [](VkPhysicalDevice dev)
         {
             int32_t score = 0;
 
             auto prop = dev.getProperties();
-            if (prop.deviceType == vk::PhysicalDeviceType::eDiscreteGpu) {
+            if (prop.deviceType == VkPhysicalDeviceType::eDiscreteGpu) {
                 score += 20;
             }
             // check supports presentation
@@ -117,7 +118,7 @@ namespace RxCore
 
             return score;
         };
-        std::vector<std::pair<vk::PhysicalDevice, int32_t>> scores;
+        std::vector<std::pair<VkPhysicalDevice, int32_t>> scores;
 
         for (auto & pd: pds) {
             scores.emplace_back(pd, ScoreDevice(pd));
@@ -125,8 +126,8 @@ namespace RxCore
         std::sort(
             scores.begin(), scores.end(),
             [&](
-                const std::pair<vk::PhysicalDevice, int32_t> & a,
-                const std::pair<vk::PhysicalDevice, int32_t> & b)
+                const std::pair<VkPhysicalDevice, int32_t> & a,
+                const std::pair<VkPhysicalDevice, int32_t> & b)
             {
                 return a.second > b.second;
             });
@@ -140,23 +141,23 @@ namespace RxCore
 
         for (uint32_t i = 0; i < qfps.size(); i++) {
             auto f = qfps[i].queueFlags;
-            if (f & vk::QueueFlagBits::eGraphics && !(f & vk::QueueFlagBits::eCompute) &&
-                !(f & vk::QueueFlagBits::eTransfer)) {
+            if (f & VkQueueFlagBits::eGraphics && !(f & VkQueueFlagBits::eCompute) &&
+                !(f & VkQueueFlagBits::eTransfer)) {
                 graphicsFamily_ = i;
             }
         }
         for (uint32_t i = 0; i < qfps.size(); i++) {
             auto f = qfps[i].queueFlags;
-            if (f & vk::QueueFlagBits::eCompute && !(f & vk::QueueFlagBits::eGraphics) &&
-                !(f & vk::QueueFlagBits::eTransfer)) {
+            if (f & VkQueueFlagBits::eCompute && !(f & VkQueueFlagBits::eGraphics) &&
+                !(f & VkQueueFlagBits::eTransfer)) {
                 computeFamily_ = i;
             }
         }
 
         for (uint32_t i = 0; i < qfps.size(); i++) {
             auto f = qfps[i].queueFlags;
-            if (f & vk::QueueFlagBits::eTransfer && !(f & vk::QueueFlagBits::eCompute) &&
-                !(f & vk::QueueFlagBits::eGraphics)) {
+            if (f & VkQueueFlagBits::eTransfer && !(f & VkQueueFlagBits::eCompute) &&
+                !(f & VkQueueFlagBits::eGraphics)) {
                 transferFamily_ = i;
             }
         }
@@ -164,7 +165,7 @@ namespace RxCore
         if (!graphicsFamily_.has_value()) {
             for (uint32_t i = 0; i < qfps.size(); i++) {
                 auto f = qfps[i].queueFlags;
-                if (f & vk::QueueFlagBits::eGraphics) {
+                if (f & VkQueueFlagBits::eGraphics) {
                     graphicsFamily_ = i;
                 }
             }
@@ -173,7 +174,7 @@ namespace RxCore
         if (!computeFamily_.has_value()) {
             for (uint32_t i = 0; i < qfps.size(); i++) {
                 auto f = qfps[i].queueFlags;
-                if (f & vk::QueueFlagBits::eCompute && !(f & vk::QueueFlagBits::eGraphics)) {
+                if (f & VkQueueFlagBits::eCompute && !(f & VkQueueFlagBits::eGraphics)) {
                     computeFamily_ = i;
                 }
             }
@@ -182,7 +183,7 @@ namespace RxCore
         if (!computeFamily_.has_value()) {
             for (uint32_t i = 0; i < qfps.size(); i++) {
                 auto f = qfps[i].queueFlags;
-                if (f & vk::QueueFlagBits::eCompute) {
+                if (f & VkQueueFlagBits::eCompute) {
                     computeFamily_ = i;
                 }
             }
@@ -191,7 +192,7 @@ namespace RxCore
         if (!transferFamily_.has_value()) {
             for (uint32_t i = 0; i < qfps.size(); i++) {
                 auto f = qfps[i].queueFlags;
-                if (f & vk::QueueFlagBits::eTransfer && !(f & vk::QueueFlagBits::eGraphics)) {
+                if (f & VkQueueFlagBits::eTransfer && !(f & VkQueueFlagBits::eGraphics)) {
                     transferFamily_ = i;
                 }
             }
@@ -200,7 +201,7 @@ namespace RxCore
         if (!transferFamily_.has_value()) {
             for (uint32_t i = 0; i < qfps.size(); i++) {
                 auto f = qfps[i].queueFlags;
-                if (f & vk::QueueFlagBits::eTransfer) {
+                if (f & VkQueueFlagBits::eTransfer) {
                     transferFamily_ = i;
                 }
             }
@@ -210,4 +211,5 @@ namespace RxCore
         assert(computeFamily_.has_value());
         assert(transferFamily_.has_value());
     }
+#endif
 } // namespace RXCore

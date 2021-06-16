@@ -20,7 +20,7 @@ namespace RxCore
     class Device;
 
     struct CombinedSampler {
-        vk::Sampler sampler;
+        VkSampler sampler;
         std::shared_ptr<ImageView> imageView;
     };
 
@@ -29,40 +29,40 @@ namespace RxCore
     public:
         DescriptorSet(Device * device,
                       std::shared_ptr<DescriptorPool> descriptorPool,
-                      vk::DescriptorSet newHandle);
+                      VkDescriptorSet newHandle);
 
         RX_NO_COPY_NO_MOVE(DescriptorSet);
 
         ~DescriptorSet();
 
         void updateDescriptor(uint32_t binding,
-                              vk::DescriptorType type,
+                              VkDescriptorType type,
                               std::shared_ptr<Buffer> buffer,
                               const uint32_t range = 0,
                               const uint32_t offset = 0);
 
         void updateDescriptor(uint32_t binding,
-                              vk::DescriptorType type,
+                              VkDescriptorType type,
                               const std::shared_ptr<Image> & image,
-                              vk::Sampler sampler);
+                              VkSampler sampler);
 
         void updateDescriptor(
             uint32_t binding,
-            vk::DescriptorType type,
+            VkDescriptorType type,
             const std::vector<CombinedSampler> &
                 samplerViews);
 
         void updateDescriptor(uint32_t binding,
-                              vk::DescriptorType type,
+                              VkDescriptorType type,
                               std::shared_ptr<ImageView> imageView,
-                              vk::ImageLayout layout,
-                              vk::Sampler sampler);
+                              VkImageLayout layout,
+                              VkSampler sampler);
 
         void setDescriptorOffset(uint32_t binding, const uint32_t offset) {
             offsets_[binding] = offset;
         }
 
-        const vk::DescriptorSet handle;
+        const VkDescriptorSet handle;
 
         void freeResources();
 

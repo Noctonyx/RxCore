@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "CommandBuffer.hpp"
 #include "Buffer.hpp"
 #include "VertexBuffer.h"
@@ -17,47 +18,61 @@ namespace RxCore
         buffers_.clear();
         descriptorSets_.clear();
 
-        handle_.begin({{}, nullptr});
+        VkCommandBufferBeginInfo cbi{};
+        cbi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+        vkBeginCommandBuffer(handle_, &cbi);
+        //handle_.begin({{}, nullptr});
     }
 
-    void SecondaryCommandBuffer::begin(vk::RenderPass renderPass, uint32_t subPass)
+    void SecondaryCommandBuffer::begin(VkRenderPass renderPass, uint32_t subPass)
     {
         OPTICK_EVENT()
         started_ = true;
         buffers_.clear();
         descriptorSets_.clear();
 
-        vk::CommandBufferBeginInfo cbbi;
-        vk::CommandBufferInheritanceInfo cbii;
-        cbii.setRenderPass(renderPass).setSubpass(subPass);
+        VkCommandBufferBeginInfo cbbi{};
+        cbbi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-        cbbi.setFlags(vk::CommandBufferUsageFlagBits::eRenderPassContinue);
-        cbbi.setPInheritanceInfo(&cbii);
-        handle_.begin(cbbi);
+        VkCommandBufferInheritanceInfo cbii{};
+        cbii.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+        cbii.renderPass = renderPass;
+        cbii.subpass = subPass;
+        //cbii.setRenderPass(renderPass).setSubpass(subPass);
+        cbbi.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+        cbbi.pInheritanceInfo = &cbii;
+
+        vkBeginCommandBuffer(handle_, &cbbi);
+        //handle_.begin(cbbi);
     }
 
     void CommandBuffer::end()
     {
         OPTICK_EVENT();
 
-        handle_.end();
+        vkEndCommandBuffer(handle_);
     }
 
     void CommandBuffer::beginRenderPass(
-        vk::RenderPass renderPass,
+        VkRenderPass renderPass,
         std::shared_ptr<FrameBuffer> fb,
-        const vk::Extent2D extent,
-        const std::vector<vk::ClearValue> & clearValues)
+        const VkExtent2D extent,
+        const std::vector<VkClearValue> & clearValues)
     {
         OPTICK_EVENT()
-        vk::RenderPassBeginInfo rpbi{
-            renderPass,
-            fb->Handle(),
-            {{0, 0}, extent},
-            clearValues
-        };
+        VkRenderPassBeginInfo rpbi{};
+
+        rpbi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        rpbi.renderPass = renderPass;
+        rpbi.framebuffer = fb->Handle();
+        rpbi.renderArea = {{0, 0}, extent};
+        rpbi.clearValueCount = static_cast<uint32_t>(clearValues.size());
+        rpbi.pClearValues = clearValues.data();
+
         frameBuffers_.emplace(std::move(fb));
-        handle_.beginRenderPass(rpbi, vk::SubpassContents::eSecondaryCommandBuffers);
+        vkCmdBeginRenderPass(handle_, &rpbi, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        //handle_.beginRenderPass(rpbi, VkSubpassContents::eSecondaryCommandBuffers);
     }
 
     void CommandBuffer::setViewport(
@@ -69,51 +84,61 @@ namespace RxCore
         float maxDepth) const
     {
         OPTICK_EVENT()
-        handle_.setViewport(0, {{x, y, width, height, minDepth, maxDepth}});
+
+        VkViewport vp = {x, y, width, height, minDepth, maxDepth};
+        vkCmdSetViewport(handle_, 0, 1, &vp);
     }
 
-    void CommandBuffer::setScissor(vk::Rect2D rect) const
+    void CommandBuffer::setScissor(VkRect2D rect) const
     {
         OPTICK_EVENT()
-        handle_.setScissor(0, {rect});
+
+        VkRect2D sc = {rect};
+        vkCmdSetScissor(handle_, 0, 1, &sc);
     }
 
     void CommandBuffer::clearScissor() const
     {
-        handle_.setScissor(0, {});
+        VkRect2D sc = {};
+        vkCmdSetScissor(handle_, 0, 1, &sc);
     }
 
     void CommandBuffer::BindDescriptorSet(
         uint32_t firstSet,
         std::shared_ptr<DescriptorSet> usedSet)
     {
-        handle_.bindDescriptorSets(
-            vk::PipelineBindPoint::eGraphics,
-            currentLayout_,
-            firstSet,
-            {usedSet->handle},
-            usedSet->getOffsets());
+        auto offsets = usedSet->getOffsets();
+
+        vkCmdBindDescriptorSets(handle_, VK_PIPELINE_BIND_POINT_GRAPHICS, currentLayout_, firstSet,
+                                1, &usedSet->handle, static_cast<uint32_t>(offsets.size()),
+                                offsets.data());
 
         descriptorSets_.emplace(std::move(usedSet));
     }
 
     void CommandBuffer::pushConstant(
-        vk::ShaderStageFlags shaderFlags,
+        VkShaderStageFlags shaderFlags,
         uint32_t offset,
         uint32_t size,
         const void * ptr) const
     {
-        handle_.pushConstants(currentLayout_, shaderFlags, offset, size, ptr);
+        vkCmdPushConstants(handle_, currentLayout_, shaderFlags, offset, size, ptr);
+        //        handle_.pushConstants(currentLayout_, shaderFlags, offset, size, ptr);
     }
 
-    void CommandBuffer::bindPipeline(vk::Pipeline pipeline)
+    void CommandBuffer::bindPipeline(VkPipeline pipeline)
     {
-        handle_.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+        vkCmdBindPipeline(handle_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+        //handle_.bindPipeline(VkPipelineBindPoint::eGraphics, pipeline);
     }
 
     void CommandBuffer::bindVertexBuffer(std::shared_ptr<Buffer> buffer)
     {
-        handle_.bindVertexBuffers(0, {buffer->handle()}, {0});
+        auto b = std::vector{buffer->handle()};
+        auto o = std::vector{0ULL};
+
+        vkCmdBindVertexBuffers(handle_, 0, static_cast<uint32_t>(b.size()), b.data(), o.data());
+        //handle_.bindVertexBuffers(0, {buffer->handle()}, {0});
         buffers_.emplace(std::move(buffer));
     }
 
@@ -124,37 +149,39 @@ namespace RxCore
         int32_t vertexOffset,
         uint32_t firstInstance)
     {
-        handle_.drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+        vkCmdDrawIndexed(handle_, indexCount, instanceCount, firstIndex, vertexOffset,
+                         firstInstance);
+        //handle_.drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     }
 
     void CommandBuffer::bindIndexBuffer(std::shared_ptr<IndexBuffer> buffer, uint64_t offset)
     {
         if (buffer->is16Bit_) {
-            handle_.bindIndexBuffer(buffer->handle(), offset, vk::IndexType::eUint16);
+            vkCmdBindIndexBuffer(handle_, buffer->handle(), offset, VK_INDEX_TYPE_UINT16);
         } else {
-            handle_.bindIndexBuffer(buffer->handle(), offset, vk::IndexType::eUint32);
+            vkCmdBindIndexBuffer(handle_, buffer->handle(), offset, VK_INDEX_TYPE_UINT32);
         }
         buffers_.emplace(std::move(buffer));
     }
 
     void CommandBuffer::EndRenderPass()
     {
-        handle_.endRenderPass();
+        vkCmdEndRenderPass(handle_);
     }
-
-    vk::ImageMemoryBarrier CommandBuffer::ImageBarrier(
-        vk::Image image,
-        vk::AccessFlags srcAccessMask,
-        vk::AccessFlags destAccessMask,
-        vk::ImageLayout oldLayout,
-        vk::ImageLayout newLayout)
+#if 0
+    VkImageMemoryBarrier CommandBuffer::ImageBarrier(
+        VkImage image,
+        VkAccessFlags srcAccessMask,
+        VkAccessFlags destAccessMask,
+        VkImageLayout oldLayout,
+        VkImageLayout newLayout)
     {
-        auto srr = vk::ImageSubresourceRange();
-        srr.setAspectMask(vk::ImageAspectFlagBits::eColor)
-           .setLevelCount(VK_REMAINING_MIP_LEVELS)
-           .setLayerCount(VK_REMAINING_ARRAY_LAYERS);
+        VkImageSubresourceRange srr = {
+            VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS
+        };
 
-        auto ib = vk::ImageMemoryBarrier();
+
+        auto ib = VkImageMemoryBarrier();
         ib.setSrcAccessMask(srcAccessMask)
           .setDstAccessMask(destAccessMask)
           .setOldLayout(oldLayout)
@@ -164,14 +191,14 @@ namespace RxCore
 
         return ib;
     }
-
+#endif
     void CommandBuffer::Draw(
         uint32_t vertexCount,
         uint32_t instanceCount,
         uint32_t firstVertex,
         uint32_t firstInstance)
     {
-        handle_.draw(vertexCount, instanceCount, firstVertex, firstInstance);
+        vkCmdDraw(handle_, vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
 #if 0
@@ -179,20 +206,20 @@ namespace RxCore
         const PipelineLayout & layout,
         uint32_t binding,
         std::shared_ptr<Buffer> buffer,
-        vk::DescriptorType type,
+        VkDescriptorType type,
         uint32_t set
     )
     {
-        vk::DescriptorBufferInfo bi = buffer->GetDescriptor();
+        VkDescriptorBufferInfo bi = buffer->GetDescriptor();
 
-        vk::WriteDescriptorSet descriptors[1];
+        VkWriteDescriptorSet descriptors[1];
         descriptors[0].dstBinding = binding;
         descriptors[0].descriptorCount = 1;
         descriptors[0].descriptorType = type;
         descriptors[0].pBufferInfo = &bi;
 
         handle_.pushDescriptorSetKHR(
-            vk::PipelineBindPoint::eGraphics,
+            VkPipelineBindPoint::eGraphics,
             layout.handle,
             set,
             1,
@@ -203,7 +230,7 @@ namespace RxCore
     void PrimaryCommandBuffer::executeSecondaries(uint16_t sequence)
     {
         OPTICK_EVENT("Execute 2nd")
-        std::vector<vk::CommandBuffer> bufs(secondaries_[sequence].size());
+        std::vector<VkCommandBuffer> bufs(secondaries_[sequence].size());
 
         if (bufs.empty()) {
             return;
@@ -214,11 +241,16 @@ namespace RxCore
             {
                 return b->Handle();
             });
-        handle_.executeCommands(bufs);
+        vkCmdExecuteCommands(handle_, static_cast<uint32_t>(bufs.size()), bufs.data());
     }
 
-    void PrimaryCommandBuffer::executeSecondary(const std::shared_ptr<SecondaryCommandBuffer> & secondary) {
-        handle_.executeCommands({ secondary->Handle() });
+    void PrimaryCommandBuffer::executeSecondary(
+        const std::shared_ptr<SecondaryCommandBuffer> & secondary)
+    {
+        std::vector<VkCommandBuffer> bufs = {secondary->Handle()};
+
+        vkCmdExecuteCommands(handle_, static_cast<uint32_t>(bufs.size()), bufs.data());
+
         secondaries2_.push_back(secondary);
     }
 
@@ -238,12 +270,13 @@ namespace RxCore
     void TransferCommandBuffer::copyBuffer(
         std::shared_ptr<Buffer> source,
         std::shared_ptr<Buffer> dest,
-        vk::DeviceSize srcOffset,
-        vk::DeviceSize destOffset,
-        vk::DeviceSize size)
+        VkDeviceSize srcOffset,
+        VkDeviceSize destOffset,
+        VkDeviceSize size)
     {
-        vk::BufferCopy bc{srcOffset, destOffset, size};
-        handle_.copyBuffer(source->handle(), dest->handle(), 1, &bc);
+        VkBufferCopy bc{srcOffset, destOffset, size};
+
+        vkCmdCopyBuffer(handle_, source->handle(), dest->handle(), 1, &bc);
         (void) buffers_.emplace(std::move(source));
         (void) buffers_.emplace(std::move(dest));
     }
@@ -253,15 +286,16 @@ namespace RxCore
         auto queue = device_->getTransferQueue();
         //auto queue = RxCore::iVulkan()->transferQueue_;
 
-        vk::SubmitInfo si{
-            nullptr, nullptr,
-            handle_
-        };
+        VkSubmitInfo si{};
+        si.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        si.commandBufferCount = 1;
+        si.pCommandBuffers = &handle_;
+
         auto fence = device_->createFence();
-        queue->GetHandle().submit(si, fence);
+        vkQueueSubmit(queue->GetHandle(), 1, &si, fence);
 
         const auto result = device_->waitForFence(fence);
-        assert(result == vk::Result::eSuccess);
+        assert(result == VK_SUCCESS);
 
         device_->destroyFence(fence);
         buffers_.clear();
@@ -270,24 +304,26 @@ namespace RxCore
     void TransferCommandBuffer::copyBufferToImage(
         std::shared_ptr<Buffer> source,
         std::shared_ptr<Image> dest,
-        vk::Extent3D extent,
+        VkExtent3D extent,
         uint32_t layerCount,
-        uint32_t baseArrayLayer, uint32_t mipLevel)
+        uint32_t baseArrayLayer,
+        uint32_t mipLevel)
     {
-        vk::BufferImageCopy bc{
+        VkBufferImageCopy bc{
             0,
             0,
             0,
-            {vk::ImageAspectFlagBits::eColor, mipLevel, baseArrayLayer, layerCount},
+            {VK_IMAGE_ASPECT_COLOR_BIT, mipLevel, baseArrayLayer, layerCount},
             {0, 0, 0},
             extent
         };
-        handle_.copyBufferToImage(
-            source->handle(),
-            dest->handle(),
-            vk::ImageLayout::eTransferDstOptimal,
-            1,
-            &bc);
+
+        vkCmdCopyBufferToImage(handle_,
+                               source->handle(),
+                               dest->handle(),
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                               1,
+                               &bc);
 
         images_.emplace(std::move(dest));
         buffers_.emplace(std::move(source));
@@ -295,33 +331,29 @@ namespace RxCore
 
     void TransferCommandBuffer::imageTransition(
         std::shared_ptr<Image> dest,
-        vk::ImageLayout destLayout,
+        VkImageLayout destLayout,
         uint32_t mipLevel)
     {
-        //vk::PipelineStageFlags src_stage, dest_stage;
+        //VkPipelineStageFlags src_stage, dest_stage;
 
-        vk::ImageMemoryBarrier imb{};
+        VkImageMemoryBarrier imb{};
+        imb.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         imb.image = dest->handle();
-        imb.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        imb.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         imb.subresourceRange.baseMipLevel = mipLevel;
         imb.subresourceRange.levelCount = 1;
         imb.subresourceRange.baseArrayLayer = 0;
         imb.subresourceRange.layerCount = 1;
-        imb.oldLayout = vk::ImageLayout::eUndefined;
+        imb.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imb.newLayout = destLayout;
-        imb.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
-        imb.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+        imb.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imb.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
 
-        std::vector<vk::ImageMemoryBarrier> vi = {imb};
+        std::vector<VkImageMemoryBarrier> vi = {imb};
 
-        handle_.pipelineBarrier(
-            vk::PipelineStageFlagBits::eTransfer,
-            vk::PipelineStageFlagBits::eTransfer,
-            {},
-            {},
-            {},
-            {imb});
+        vkCmdPipelineBarrier(handle_, VK_PIPELINE_STAGE_TRANSFER_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imb);
         images_.emplace(std::move(dest));
     }
 } // namespace RXCore

@@ -4,6 +4,7 @@
 
 namespace RxCore
 {
+#if 0
     class SwapChain
     {
         friend class RenderPass;
@@ -11,32 +12,32 @@ namespace RxCore
 
         struct SwapChainState
         {
-            //vk::Semaphore presentCompleteSemaphore;
-            //vk::Semaphore renderFinishedSemaphore;
-            vk::Image image;
-            vk::ImageView imageView;
+            //VkSemaphore presentCompleteSemaphore;
+            //VkSemaphore renderFinishedSemaphore;
+            VkImage image;
+            VkImageView imageView;
         };
 
     public:
         SwapChain( Device * device,
             uint32_t image_count,
-            vk::SwapchainKHR h,
-            vk::Format format,
-            vk::Extent2D ex);
+            VkSwapchainKHR h,
+            VkFormat format,
+            VkExtent2D ex);
         ~SwapChain();
 
         SwapChain(const SwapChain & other) = delete;
         SwapChain & operator=(const SwapChain & other) = delete;
 
-        std::tuple<vk::ImageView, vk::Semaphore, uint32_t> AcquireNextImage();
-        void PresentImage(vk::ImageView imageView, vk::Semaphore renderComplete);
+        std::tuple<VkImageView, VkSemaphore, uint32_t> AcquireNextImage();
+        void PresentImage(VkImageView imageView, VkSemaphore renderComplete);
 
-        [[nodiscard]] vk::Extent2D GetExtent() const
+        [[nodiscard]] VkExtent2D GetExtent() const
         {
             return extent_;
         }
 
-        const vk::SwapchainKHR handle;
+        const VkSwapchainKHR handle;
 
     protected:
         void createResources();
@@ -50,18 +51,18 @@ namespace RxCore
         }
 
     private:
-        vk::Extent2D extent_;
-        vk::Format imageFormat_;
+        VkExtent2D extent_;
+        VkFormat imageFormat_;
     public:
-        [[nodiscard]] vk::Format imageFormat() const
+        [[nodiscard]] VkFormat imageFormat() const
         {
             return imageFormat_;
         }
 
     private:
-        vk::Queue presentQueue_;
+        VkQueue presentQueue_;
         std::vector<SwapChainState> swapChainState_;
-        std::vector<vk::Semaphore> imageReadySemaphores_;
+        std::vector<VkSemaphore> imageReadySemaphores_;
         uint8_t imageReadySemaphoreIndex_;
         uint32_t currentImage_ = 0;
         bool swapChainOutOfDate_ = false;
@@ -76,4 +77,5 @@ namespace RxCore
             return swapChainOutOfDate_;
         }
     };
+#endif
 }

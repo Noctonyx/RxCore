@@ -36,8 +36,8 @@
 
 namespace RxCore
 {
-    class Instance;
-    class PhysicalDevice;
+    //class Instance;
+    //class PhysicalDevice;
     class VertexBuffer;
     class IndexBuffer;
     class Queue;
@@ -48,7 +48,7 @@ namespace RxCore
     class CommandPool;
     class CommandBuffer;
     class Shader;
-    class SwapChain;
+    //class SwapChain;
     class ImageView;
 
     struct MemHeapStatus
@@ -78,7 +78,7 @@ namespace RxCore
             return context_;
         }
 
-        static vk::Device VkDevice()
+        static VkDevice VkDevice()
         {
             return context_->getDevice();
         }
@@ -86,7 +86,7 @@ namespace RxCore
         void WaitIdle() const;
 
         std::shared_ptr<DescriptorPool> CreateDescriptorPool(
-            std::vector<vk::DescriptorPoolSize> poolSizes,
+            std::vector<VkDescriptorPoolSize> poolSizes,
             uint32_t max);
 
         std::shared_ptr<CommandPool> CreateGraphicsCommandPool();
@@ -96,72 +96,74 @@ namespace RxCore
         void destroyDescriptorPool(DescriptorPool * pool);
 
         //------- Surface
-        std::unique_ptr<SwapChain> createSwapChain();
+        //std::unique_ptr<SwapChain> createSwapChain();
         [[nodiscard]] uint32_t getPresentQueueFamily() const;
-        void updateSurfaceCapabilities();
+        //void updateSurfaceCapabilities();
+
+       
     protected:
-        void getSurfaceDetails();
-        void selectSurfaceFormat();
-        void selectPresentationMode();
-        void selectPresentationQueueFamily();
+        //void getSurfaceDetails();
+        //void selectSurfaceFormat();
+        //void selectPresentationMode();
+        //void selectPresentationQueueFamily();
 
     public:
-        [[nodiscard]] vk::Semaphore createSemaphore() const;
-        void destroySemaphore(vk::Semaphore s) const;
+        [[nodiscard]] VkSemaphore createSemaphore() const;
+        void destroySemaphore(VkSemaphore s) const;
         [[nodiscard]] std::shared_ptr<Queue> getTransferQueue() const;
 
         // --------------------------------
-        vk::Fence createFence() const;
-        void destroyFence(vk::Fence f) const;
-        vk::Result waitForFence(vk::Fence f) const;
-        vk::Result getFenceStatus(vk::Fence f) const;
+        VkFence createFence() const;
+        void destroyFence(VkFence f) const;
+        VkResult waitForFence(VkFence f) const;
+        VkResult getFenceStatus(VkFence f) const;
 
         // ---------------------------------
         std::shared_ptr<Image> createImage(
-            vk::Format format,
-            vk::Extent3D extent,
+            VkFormat format,
+            VkExtent3D extent,
             uint32_t mipLevels,
             uint32_t layers,
-            vk::ImageUsageFlags usage,
-            vk::ImageType type = vk::ImageType::e2D);
+            VkImageUsageFlags usage,
+            VkImageType type = VK_IMAGE_TYPE_2D);
         void destroyImage(Image * image) const;
 
         [[nodiscard]] std::shared_ptr<ImageView> createImageView(
             const std::shared_ptr<Image>& image,
-            vk::ImageViewType viewType,
-            vk::ImageAspectFlagBits aspect,
+            VkImageViewType viewType,
+            VkImageAspectFlagBits aspect,
             uint32_t baseArrayLayer = 0,
             uint32_t layerCount = VK_REMAINING_ARRAY_LAYERS) const;
         void destroyImageView(ImageView * image) const;
 #if 0
         std::shared_ptr<Image> Create2DImage(
-            vk::Format format,
-            vk::Extent2D extent,
+            VkFormat format,
+            VkExtent2D extent,
             uint32_t layers,
-            vk::ImageUsageFlags usage) const;
+            VkImageUsageFlags usage) const;
 
         std::shared_ptr<Image> CreateImage(
-            vk::Format format,
-            vk::Extent3D extent,
+            VkFormat format,
+            VkExtent3D extent,
             uint32_t layers,
-            vk::ImageUsageFlags usage,
-            vk::ImageType type = vk::ImageType::e2D) const;
+            VkImageUsageFlags usage,
+            VkImageType type = VkImageType::e2D) const;
 
         std::shared_ptr<Image> createImageWithoutMemory(
-            vk::Format format,
-            vk::Extent3D extent,
+            VkFormat format,
+            VkExtent3D extent,
             uint32_t layers,
-            vk::ImageUsageFlags usage,
-            vk::ImageType type = vk::ImageType::e2D, uint32_t mipLevels = 1) const;
+            VkImageUsageFlags usage,
+            VkImageType type = VkImageType::e2D, uint32_t mipLevels = 1) const;
 
         std::shared_ptr<Image> Create2DImage(
-            vk::Format format,
+            VkFormat format,
             uint32_t width,
             uint32_t height)
         const;
 
         std::shared_ptr<Image> Create2DImage(
-            vk::Format format,
+            VkFormat format,
             uint32_t width,
             uint32_t height,
             uint8_t * pixels,
@@ -169,7 +171,7 @@ namespace RxCore
 #endif
         std::shared_ptr<Shader> createShader(const std::vector<uint32_t> & bytes) const;
 
-        vk::Format GetDepthFormat(bool checkSamplingSupport) const;
+        VkFormat GetDepthFormat(bool checkSamplingSupport) const;
 
         void transferBuffer(
             std::shared_ptr<Buffer> src,
@@ -179,18 +181,18 @@ namespace RxCore
             size_t destOffset = 0) const;
         void transitionImageLayout(
             const std::shared_ptr<Image> & image,
-            vk::ImageLayout dstLayout)
+            VkImageLayout dstLayout)
         const;
 
         void transferBufferToImage(
             std::shared_ptr<Buffer> src,
             std::shared_ptr<Image> dst,
-            vk::Extent3D extent,
-            vk::ImageLayout destLayout,
+            VkExtent3D extent,
+            VkImageLayout destLayout,
             uint32_t layerCount,
             uint32_t baseArrayLayer, uint32_t mipLevel = 0) const;
 
-        [[nodiscard]] vk::Device getDevice() const
+        [[nodiscard]] VkDevice getDevice() const
         {
             return handle_;
         };
@@ -198,23 +200,23 @@ namespace RxCore
         uint64_t getBufferAddress(const Buffer * buffer) const;
 #if 0
         std::shared_ptr<Memory> allocateMemory(
-            const vk::MemoryPropertyFlags memFlags,
-            const vk::MemoryRequirements & memReq) const;
+            const VkMemoryPropertyFlags memFlags,
+            const VkMemoryRequirements & memReq) const;
 #endif
         void getMemBudget(std::vector<MemHeapStatus> & heaps) const;
         // =----  Creating objects
 
-        vk::Sampler createSampler(const vk::SamplerCreateInfo & sci);
-        vk::DescriptorSetLayout createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo & dslci);
-        vk::PipelineLayout createPipelineLayout(const vk::PipelineLayoutCreateInfo & plci);
+        VkSampler createSampler(const VkSamplerCreateInfo & sci);
+        VkDescriptorSetLayout createDescriptorSetLayout(const VkDescriptorSetLayoutCreateInfo & dslci);
+        VkPipelineLayout createPipelineLayout(const VkPipelineLayoutCreateInfo & plci);
 
-        std::shared_ptr<CommandPool> createCommandPool(const vk::CommandPoolCreateInfo & cci);
+        std::shared_ptr<CommandPool> createCommandPool(uint32_t index);
         // std::shared_ptr<Buffer> createUniformBuffer(MemoryType memType, const uint64_t size, void * data);
         std::shared_ptr<Buffer> createStagingBuffer(size_t size, const void * data);
         std::shared_ptr<Buffer> createBuffer(
-            const vk::BufferUsageFlags & flags,
+            const VkBufferUsageFlags & flags,
             VmaMemoryUsage memType,
-            vk::DeviceSize size,
+            VkDeviceSize size,
             void * data = nullptr);
 
 #if 0
@@ -242,16 +244,16 @@ namespace RxCore
 
         // =---- Getting Information
 
-        [[nodiscard]] vk::DeviceSize getUniformBufferAlignment(vk::DeviceSize size) const;
-        [[nodiscard]] vk::DeviceSize getStorageBufferAlignment(vk::DeviceSize size) const;
+        [[nodiscard]] VkDeviceSize getUniformBufferAlignment(VkDeviceSize size) const;
+        [[nodiscard]] VkDeviceSize getStorageBufferAlignment(VkDeviceSize size) const;
 
         // =---- Actions
 
         void clearQueues();
 
         // Window * window;
-        std::unique_ptr<Instance> instance;
-        std::shared_ptr<PhysicalDevice> physicalDevice;
+        //std::unique_ptr<Instance> instance;
+        //std::shared_ptr<PhysicalDevice> physicalDevice;
 
         VmaAllocator allocator{};
 
@@ -259,36 +261,60 @@ namespace RxCore
         std::shared_ptr<Queue> graphicsQueue_;
         std::shared_ptr<Queue> transferQueue_;
         std::shared_ptr<Queue> computeQueue_;
-        void createDevice();
+        VkQueue presentQueue;
+        
+        //void createDevice();
+
+        std::tuple<VkImageView, VkSemaphore, uint32_t>  acquireImage();
+        void presentImage(VkImageView imageView, VkSemaphore readySemaphore);
+
+        bool checkSwapChain();
+        void replaceSwapChain();
+        VkExtent2D getSwapChainExtent() const;
+        uint32_t getSwapChainImageCount() const;
+        VkFormat getSwapChainFormat() const;
 
     private:
-        vk::Device handle_;
+        vkb::Instance instance;
+        vkb::Device vkb_device;
+        vkb::PhysicalDevice phys_device;
+
+        vkb::Swapchain swapChain;
+        std::vector<VkImage> swapChainImages;
+        std::vector<VkImageView> swapChainImageViews;
+        std::vector<VkSemaphore> swapChainSemaphores;
+        uint32_t swapChainIndex = 0;
+
+        bool swapChainOutofDate = false;
+
+        //VkPhysicalDeviceLimits phys_limits;
+        VkDevice handle_;
         //std::shared_ptr<Surface> surface;
-        vk::SurfaceKHR surface_;
-        std::unordered_map<RxUtil::Hash, vk::Sampler> samplers_;
-        std::unordered_map<RxUtil::Hash, vk::PipelineLayout> pipelineLayouts_;
-        std::unordered_map<RxUtil::Hash, vk::DescriptorSetLayout> descriptorSetLayouts_;
+        VkSurfaceKHR surface_;
+        std::unordered_map<RxUtil::Hash, VkSampler> samplers_;
+        std::unordered_map<RxUtil::Hash, VkPipelineLayout> pipelineLayouts_;
+        std::unordered_map<RxUtil::Hash, VkDescriptorSetLayout> descriptorSetLayouts_;
 
         std::optional<uint32_t> presentQueueFamily_{};
-        bool exclusiveQueueSupport_{};
+        //bool exclusiveQueueSupport_{};
 
-        vk::SurfaceCapabilitiesKHR capabilities_{};
-        std::vector<vk::SurfaceFormatKHR> formats_{};
-        std::vector<vk::PresentModeKHR> presentationModes_{};
-        vk::Format selectedFormat_{};
-        vk::ColorSpaceKHR selectedColorSpace_{};
-        vk::PresentModeKHR selectedPresentationMode_{};
+        //VkSurfaceCapabilitiesKHR capabilities_{};
+        //std::vector<VkSurfaceFormatKHR> formats_{};
+        //std::vector<VkPresentModeKHR> presentationModes_{};
+        //VkFormat selectedFormat_{};
+        //VkColorSpaceKHR selectedColorSpace_{};
+        //VkPresentModeKHR selectedPresentationMode_{};
 
-        RxUtil::Hash getHashForSampler(vk::Sampler) const;
-        RxUtil::Hash getHashForDescriptorSetLayout(vk::DescriptorSetLayout) const;
+        RxUtil::Hash getHashForSampler(VkSampler) const;
+        RxUtil::Hash getHashForDescriptorSetLayout(VkDescriptorSetLayout) const;
         //std::unordered_map<RXUtil::Hash, std::shared_ptr<Sampler>> samplers_;
-        RxUtil::Hash getHash(const vk::SamplerCreateInfo & sci) const;
-        RxUtil::Hash getHash(const vk::PipelineLayoutCreateInfo & plci) const;
-        RxUtil::Hash getHash(const vk::DescriptorSetLayoutCreateInfo & dslci) const;
-        RxUtil::Hash getHash(const vk::DescriptorSetLayoutBindingFlagsCreateInfo & dslbfci) const;
+        RxUtil::Hash getHash(const VkSamplerCreateInfo & sci) const;
+        RxUtil::Hash getHash(const VkPipelineLayoutCreateInfo & plci) const;
+        RxUtil::Hash getHash(const VkDescriptorSetLayoutCreateInfo & dslci) const;
+        RxUtil::Hash getHash(const VkDescriptorSetLayoutBindingFlagsCreateInfo & dslbfci) const;
         RxUtil::Hash getPNextHash(const void * pNext) const;
 
-        void createQueues();
+        //void createQueues();
     };
 
 #if 0

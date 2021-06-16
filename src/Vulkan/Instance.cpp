@@ -9,10 +9,11 @@
 #include "spdlog/spdlog.h"
 #include "SDL_vulkan.h"
 
-VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+//VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 namespace RxCore
 {
+#if 0
     Instance::Instance(Device * context,SDL_Window* window)
         : Context(context)
     {
@@ -26,13 +27,13 @@ namespace RxCore
 
     void Instance::CreateInstance(SDL_Window * window)
     {
-        vk::DynamicLoader dl;
+        VkDynamicLoader dl;
         PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
             dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
 
         VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
-        vk::ApplicationInfo ai{
+        VkApplicationInfo ai{
             "RX",
             VK_MAKE_VERSION(0, 0, 1),
             "RXCore",
@@ -46,7 +47,7 @@ namespace RxCore
                 "VK_LAYER_KHRONOS_validation"
             };
 
-        Handle = vk::createInstance(
+        Handle = VkcreateInstance(
             {
                 {},
                 &ai,
@@ -62,21 +63,21 @@ namespace RxCore
 
     void Instance::EnableDebugMessages()
     {
-        vk::DebugUtilsMessengerCreateInfoEXT ci;
-        ci.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-                             vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-                             vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+        VkDebugUtilsMessengerCreateInfoEXT ci;
+        ci.messageSeverity = VkDebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+                             VkDebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+                             VkDebugUtilsMessageSeverityFlagBitsEXT::eError;
 
-        ci.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-                         vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-                         vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+        ci.messageType = VkDebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+                         VkDebugUtilsMessageTypeFlagBitsEXT::eValidation |
+                         VkDebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
         ci.pfnUserCallback = DebugCallback;
         ci.pUserData = nullptr;
 
         auto result = GetHandle().createDebugUtilsMessengerEXT(&ci, nullptr, &debugMessenger_);
-        assert(result == vk::Result::eSuccess);
-        if(result != vk::Result::eSuccess) {
+        assert(result == VkResult::eSuccess);
+        if(result != VkResult::eSuccess) {
             throw std::exception("Unable to create debug util messenger");
         }
 
@@ -127,4 +128,5 @@ namespace RxCore
         }
         return VK_FALSE;
     }
+#endif
 }

@@ -31,6 +31,7 @@
 #define RX_QUEUE_HPP
 
 #include <deque>
+#include <memory>
 #include "Vulk.hpp"
 
 namespace RxCore
@@ -42,15 +43,15 @@ namespace RxCore
     class Queue
     {
     public:
-        Queue(Device * device, vk::Queue queue, uint32_t queueFamily);
+        Queue(Device * device, VkQueue queue, uint32_t queueFamily);
         ~Queue();
 
         void ReleaseCompleted();
         void submitAndWait(std::shared_ptr<PrimaryCommandBuffer> & buffer) const;
         void Submit(std::vector<std::shared_ptr<PrimaryCommandBuffer>> buffs,
-                    std::vector<vk::Semaphore> waitSems,
-                    std::vector<vk::PipelineStageFlags> waitStages,
-                    std::vector<vk::Semaphore> signalSemaphores);
+                    std::vector<VkSemaphore> waitSems,
+                    std::vector<VkPipelineStageFlags> waitStages,
+                    std::vector<VkSemaphore> signalSemaphores);
 
         uint32_t family() const
         {
@@ -59,14 +60,14 @@ namespace RxCore
 
     private:
         Device * device_;
-        std::deque<std::tuple<vk::Fence, std::vector<std::shared_ptr<PrimaryCommandBuffer>>>>
+        std::deque<std::tuple<VkFence, std::vector<std::shared_ptr<PrimaryCommandBuffer>>>>
             resources_;
-        // vk::Fence fence_;
-        const vk::Queue handle;
+        // VkFence fence_;
+        VkQueue handle;
         uint32_t family_;
 
     public:
-        const vk::Queue GetHandle() const;
+        VkQueue GetHandle() const;
     };
 } // namespace RXCore
 #endif // RX_QUEUE_HPP

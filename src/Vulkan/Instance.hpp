@@ -25,7 +25,7 @@ namespace RxCore
 
         std::vector<const char *> GetInstanceExtensions(SDL_Window * window);
 
-        const vk::Instance & GetHandle() const
+        const VkInstance & GetHandle() const
         {
             return Handle;
         }
@@ -39,25 +39,25 @@ namespace RxCore
         );
 #if 0
         VkResult CreateDebugUtilsMessengerEXT(
-            const vk::Instance& instance,
+            const VkInstance& instance,
             const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
             const VkAllocationCallbacks* pAllocator,
             VkDebugUtilsMessengerEXT* pDebugMessenger
         );
 
         void DestroyDebugUtilsMessengerEXT(
-            const vk::Instance& instance,
+            const VkInstance& instance,
             VkDebugUtilsMessengerEXT debugMessenger,
             const VkAllocationCallbacks* pAllocator
         );
 #endif
-        //vk::Instance m_Instance;
+        //VkInstance m_Instance;
         //VkDebugUtilsMessengerEXT debugMessenger_ = 0;
-        vk::DebugUtilsMessengerEXT debugMessenger_;
+        VkDebugUtilsMessengerEXT debugMessenger_;
         std::vector<const char *> enabledExtensions_;
         //std::vector<const char*> m_EnabledLayers;
 
-        vk::Instance Handle;
+        VkInstance Handle;
         const Device* Context;
 
         std::vector<const char *> instanceExtensions_ =

@@ -9,7 +9,7 @@ namespace RxCore
     class Shader
     {
     public:
-        explicit Shader(const Device * device, const vk::ShaderModule & handle)
+        explicit Shader(const Device * device, const VkShaderModule & handle)
             : device_(device)
               , handle_(handle)
         {}
@@ -18,16 +18,16 @@ namespace RxCore
 
         ~Shader()
         {
-            device_->getDevice().destroyShaderModule(handle_);
+            vkDestroyShaderModule(device_->getDevice(), handle_, nullptr);
         }
 
-        [[nodiscard]] vk::ShaderModule Handle() const
+        [[nodiscard]] VkShaderModule Handle() const
         {
             return handle_;
         }
 
     private:
         const Device * device_;
-        vk::ShaderModule handle_;
+        VkShaderModule handle_;
     };
 }

@@ -9,7 +9,7 @@ namespace RxCore
     class Pipeline
     {
     public:
-        explicit Pipeline(Device * device, const vk::Pipeline & handle)
+        explicit Pipeline(Device * device, const VkPipeline & handle)
             : device_(device)
             , handle_(handle)
         {}
@@ -18,16 +18,16 @@ namespace RxCore
 
         ~Pipeline()
         {
-            device_->getDevice().destroyPipeline(handle_);
+            vkDestroyPipeline(device_->getDevice(), handle_, nullptr);
         }
 
-        [[nodiscard]] vk::Pipeline Handle() const
+        [[nodiscard]] VkPipeline Handle() const
         {
             return handle_;
         }
 
     private:
         Device * device_;
-        vk::Pipeline handle_;
+        VkPipeline handle_;
     };
 }

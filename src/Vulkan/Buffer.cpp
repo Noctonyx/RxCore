@@ -5,9 +5,9 @@ namespace RxCore
 {
     Buffer::Buffer(
         Device * device,
-        vk::Buffer handle,
+        VkBuffer handle,
         std::shared_ptr<Allocation> allocation,
-        vk::DeviceSize size)
+        VkDeviceSize size)
         : device_(device)
           , handle_(handle)
           , size_(size)
@@ -16,11 +16,11 @@ namespace RxCore
 
     Buffer::~Buffer()
     {
-        device_->getDevice().destroyBuffer(handle_);
+        vkDestroyBuffer(device_->getDevice(), handle_, nullptr);
         allocation_.reset();
     }
 
-    vk::DeviceSize Buffer::getSize() const
+    VkDeviceSize Buffer::getSize() const
     {
         return size_;
     }

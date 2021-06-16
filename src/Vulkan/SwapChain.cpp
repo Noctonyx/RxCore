@@ -35,30 +35,30 @@
 
 namespace RxCore
 {
+#if 0
     SwapChain::SwapChain(
         Device * device,
         uint32_t image_count,
-        vk::SwapchainKHR h,
-        vk::Format format,
-        vk::Extent2D ex)
+        VkSwapchainKHR h,
+        VkFormat format,
+        VkExtent2D ex)
         : handle(h)
         , device_(device)
         , imageCount_(image_count)
         , extent_(ex)
-        , imageFormat_(format) { createResources(); }
+        , imageFormat_(format)
+    {
+        createResources();
+    }
 
     SwapChain::~SwapChain()
     {
-        //const auto device = Device::VkDevice();
-
         for (uint32_t i = 0; i < imageCount_; i++) {
-            device_->getDevice().destroySemaphore(imageReadySemaphores_[i]);
-            //device.destroySemaphore(swapChainState_[i].renderFinishedSemaphore);
-            device_->getDevice().destroyImageView(swapChainState_[i].imageView);
-            //m_Device.GetVK().destroyImage(m_SwapChainState[i].m_Image);
+            vkDestroySemaphore(device_->getDevice(), imageReadySemaphores_[i], nullptr);
+            vkDestroyImageView(device_->getDevice(), swapChainState_[i].imageView, nullptr);
         }
 
-        device_->getDevice().destroySwapchainKHR(handle);
+        vkDestroySwapchainKHR(device_->getDevice(), handle, nullptr);
     }
 
     void SwapChain::createResources()
@@ -66,73 +66,62 @@ namespace RxCore
         //const auto device = Device::VkDevice();
 
         swapChainState_.resize(imageCount_);
-        auto is = device_->getDevice().getSwapchainImagesKHR(handle);
-        for (uint32_t x = 0; x < is.size(); x++) {
-            swapChainState_[x].image = is[x];
-            swapChainState_[x].imageView = device_->getDevice().createImageView(
-                {
-                    {},
-                    swapChainState_[x].image,
-                    vk::ImageViewType::e2D,
-                    imageFormat_,
-                    {
-                        vk::ComponentSwizzle::eIdentity,
-                        vk::ComponentSwizzle::eIdentity,
-                        vk::ComponentSwizzle::eIdentity,
-                        vk::ComponentSwizzle::eIdentity,
-                    },
-                    {
-                        vk::ImageAspectFlagBits::eColor,
-                        0,
-                        1,
-                        0,
-                        1
-                    }
-                }
-            );
+        uint32_t count;
+        vkGetSwapchainImagesKHR(device_->getDevice(), handle, &count, nullptr);
+        std::vector<VkImage> images;
+
+        images.resize(count);
+        vkGetSwapchainImagesKHR(device_->getDevice(), handle, &count, images.data());
+
+        //auto is = device_->getDevice().getSwapchainImagesKHR(handle);
+        for (uint32_t x = 0; x < images.size(); x++) {
+            swapChainState_[x].image = images[x];
+
+            VkImageViewCreateInfo ivci{};
+            ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            ivci.image = swapChainState_[x].image;
+            ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            ivci.format = imageFormat_;
+            ivci.components = { VK_COMPONENT_SWIZZLE_IDENTITY ,VK_COMPONENT_SWIZZLE_IDENTITY ,VK_COMPONENT_SWIZZLE_IDENTITY ,VK_COMPONENT_SWIZZLE_IDENTITY };
+            ivci.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+            vkCreateImageView(device_->getDevice(), &ivci, nullptr, &(swapChainState_[x].imageView));
         }
         imageReadySemaphores_.resize(imageCount_);
         imageReadySemaphoreIndex_ = 0;
 
         for (uint32_t i = 0; i < imageCount_; i++) {
-            imageReadySemaphores_[i] = device_->getDevice().createSemaphore({});
-            //swapChainState_[i].renderFinishedSemaphore = device.createSemaphore({});
-            //m_SwapChainState[i].m_InFlightFence = m_Device.GetVK().createFence({vk::FenceCreateFlagBits::eSignaled});
+            imageReadySemaphores_[i] = device_->createSemaphore();
         }
-
-        device_->getDevice().getQueue(
-            device_->getPresentQueueFamily(),
-            0,
-            &presentQueue_);
+        vkGetDeviceQueue(device_->getDevice(), device_->getPresentQueueFamily(), 0, &presentQueue_);
     }
 
-    std::tuple<vk::ImageView, vk::Semaphore, uint32_t> SwapChain::AcquireNextImage()
+    std::tuple<VkImageView, VkSemaphore, uint32_t> SwapChain::AcquireNextImage()
     {
         OPTICK_EVENT()
-        std::tuple<vk::ImageView, vk::Semaphore, uint32_t> result;
+        std::tuple<VkImageView, VkSemaphore, uint32_t> result;
 
-        vk::Semaphore sem = imageReadySemaphores_[imageReadySemaphoreIndex_];
+        VkSemaphore sem = imageReadySemaphores_[imageReadySemaphoreIndex_];
         std::get<1>(result) = sem;
         imageReadySemaphoreIndex_ = (imageReadySemaphoreIndex_ + 1) % imageCount_;
 
         // *semaphore = m_SwapChainState[m_CurrentImage].m_PresentCompleteSemaphore;
 
-        auto r =  device_->getDevice().acquireNextImageKHR(
-            handle,
-            std::numeric_limits<uint64_t>::max(),
-            sem,
-            nullptr,
-            &currentImage_
-        );
+        VkResult r = vkAcquireNextImageKHR(device_->getDevice(), handle,
+                                           std::numeric_limits<uint64_t>::max(),
+                                           sem,
+                                           nullptr,
+                                           &currentImage_);
+
         //        m_Device.GetVK().resetFences(1, &(m_SwapChainState[m_CurrentImage].m_InFlightFence));
         //std::get<2>(result) = swapChainState_[currentImage_].renderFinishedSemaphore;
         std::get<2>(result) = currentImage_;
 
-        if (r == vk::Result::eSuboptimalKHR) {
+        if (r == VK_SUBOPTIMAL_KHR) {
             spdlog::info("Swapchain out of date");
             swapChainOutOfDate_ = true;
         }
-        if (r == vk::Result::eErrorOutOfDateKHR) {
+        if (r == VK_ERROR_OUT_OF_DATE_KHR) {
             spdlog::info("Swapchain out of date");
             swapChainOutOfDate_ = true;
             std::get<0>(result) = nullptr;
@@ -142,28 +131,34 @@ namespace RxCore
         return result;
     }
 
-    void SwapChain::PresentImage(vk::ImageView imageView, vk::Semaphore renderComplete)
+    void SwapChain::PresentImage(VkImageView imageView, VkSemaphore renderComplete)
     {
-        try {
-            for (uint32_t i = 0; i < swapChainState_.size(); ++i) {
-                if (swapChainState_[i].imageView == imageView) {
-                    auto r = presentQueue_.presentKHR(
-                        {
-                            1,
-                            &renderComplete,
-                            1,
-                            &handle,
-                            &i
-                        });
-                    assert(r == vk::Result::eSuccess);
-                    if (r != vk::Result::eSuccess) {
-                        throw std::exception("Unable to present");
-                    }
+        for (uint32_t i = 0; i < swapChainState_.size(); ++i) {
+            if (swapChainState_[i].imageView == imageView) {
 
-                    break;
+                VkPresentInfoKHR pi{};
+                pi.sType = VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR;
+                pi.waitSemaphoreCount = 1;
+                pi.pWaitSemaphores = &renderComplete;
+                pi.swapchainCount = 1;
+                pi.pSwapchains = &handle;
+                pi.pImageIndices = &i;
+
+                auto r = vkQueuePresentKHR(presentQueue_, &pi);
+
+                if (r == VK_ERROR_OUT_OF_DATE_KHR) {
+                    swapChainOutOfDate_ = true;
+                    return;
                 }
+                assert(r == VK_SUCCESS);
+
+                if (r != VK_SUCCESS) {
+                    throw std::exception("Unable to present");
+                }
+
+                break;
             }
         }
-        catch (vk::OutOfDateKHRError &) { swapChainOutOfDate_ = true; }
     }
+#endif
 }

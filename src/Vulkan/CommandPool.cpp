@@ -34,48 +34,65 @@
 
 namespace RxCore
 {
-    CommandPool::CommandPool(Device * device, vk::CommandPool handle, uint32_t qf)
+    CommandPool::CommandPool(Device * device, VkCommandPool handle, uint32_t qf)
         : handle(handle)
         , device_(device)
-        //, queuefamily_(qf)
+    //, queuefamily_(qf)
     {}
 
     CommandPool::~CommandPool()
     {
-        device_->getDevice().destroyCommandPool(handle);
+        vkDestroyCommandPool(device_->getDevice(), handle, nullptr);
     }
 
     std::shared_ptr<PrimaryCommandBuffer> CommandPool::GetPrimaryCommandBuffer()
     {
-        vk::CommandBufferAllocateInfo cbai;
-        cbai.setCommandPool(handle).setCommandBufferCount(1);
+        VkCommandBufferAllocateInfo cbai{};
+        cbai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        cbai.commandPool = handle;
+        cbai.commandBufferCount = 1;
+        cbai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-        cbai.setLevel(vk::CommandBufferLevel::ePrimary);
+        std::vector<VkCommandBuffer> cb(1);
 
-        auto res = device_->getDevice().allocateCommandBuffers(cbai);
-        return std::make_shared<PrimaryCommandBuffer>(device_, res[0], shared_from_this());
+        auto res = vkAllocateCommandBuffers(device_->getDevice(), &cbai, cb.data());
+        if (res != VK_SUCCESS) {
+            throw std::runtime_error("Unable to allocate command buffer");
+        }
+        //auto res = device_->getDevice().allocateCommandBuffers(cbai);
+        return std::make_shared<PrimaryCommandBuffer>(device_, cb[0], shared_from_this());
     }
 
     std::shared_ptr<SecondaryCommandBuffer> CommandPool::GetSecondaryCommandBuffer()
     {
-        vk::CommandBufferAllocateInfo cbai;
-        cbai.setCommandPool(handle).setCommandBufferCount(1);
+        VkCommandBufferAllocateInfo cbai{};
+        cbai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        cbai.commandPool = handle;
+        cbai.commandBufferCount = 1;
+        cbai.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 
-        cbai.setLevel(vk::CommandBufferLevel::eSecondary);
-
-        auto res = device_->getDevice().allocateCommandBuffers(cbai);
-        return std::make_shared<SecondaryCommandBuffer>(device_, res[0], shared_from_this());
+        std::vector<VkCommandBuffer> cb(1);
+        auto res = vkAllocateCommandBuffers(device_->getDevice(), &cbai, cb.data());
+        if (res != VK_SUCCESS) {
+            throw std::runtime_error("Unable to allocate command buffer");
+        }
+        return std::make_shared<SecondaryCommandBuffer>(device_, cb[0], shared_from_this());
     }
 
     std::shared_ptr<TransferCommandBuffer> CommandPool::createTransferCommandBuffer()
     {
-        vk::CommandBufferAllocateInfo cbai;
-        cbai.setCommandPool(handle).setCommandBufferCount(1);
+        VkCommandBufferAllocateInfo cbai{};
+        cbai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        cbai.commandPool = handle;
+        cbai.commandBufferCount = 1;
+        cbai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-        cbai.setLevel(vk::CommandBufferLevel::ePrimary);
+        std::vector<VkCommandBuffer> cb(1);
 
-        auto res = device_->getDevice().allocateCommandBuffers(cbai);
-        return std::make_shared<TransferCommandBuffer>(device_, res[0], shared_from_this());
+        auto res = vkAllocateCommandBuffers(device_->getDevice(), &cbai, cb.data());
+        if (res != VK_SUCCESS) {
+            throw std::runtime_error("Unable to allocate command buffer");
+        }
+        return std::make_shared<TransferCommandBuffer>(device_, cb[0], shared_from_this());
     }
-
 } // namespace RXCore
