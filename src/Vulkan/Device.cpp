@@ -401,6 +401,14 @@ namespace RxCore
 
         // swapChain.reset();
         //surface.reset();
+
+
+        swapChain.destroy_image_views(swapChainImageViews);
+
+        for (auto s : swapChainSemaphores) {
+            destroySemaphore(s);
+        }
+
         vkb::destroy_swapchain(swapChain);
         vkDestroySurfaceKHR(instance.instance, surface_, nullptr);
         //instance->GetHandle().destroySurfaceKHR(surface_);
