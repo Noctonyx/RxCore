@@ -6,7 +6,7 @@
 namespace RxCore
 {
     VertexBuffer::VertexBuffer(
-        Device * device, vk::Buffer handle,
+        Device * device, VkBuffer handle,
         std::shared_ptr<Allocation> allocation,
         uint32_t vertexCount,
         uint32_t vertexSize)

@@ -5,12 +5,6 @@ find_package(Vulkan REQUIRED)
 add_library(RxCore STATIC 
     src/Vulkan/Device.cpp
     src/Vulkan/Device.h
-    src/Vulkan/Instance.cpp
-    src/Vulkan/Instance.hpp
-    src/Vulkan/PhysicalDevice.cpp
-    src/Vulkan/PhysicalDevice.hpp
-    src/Vulkan/SwapChain.cpp
-    src/Vulkan/SwapChain.hpp
     src/Vulkan/CommandBuffer.cpp
     src/Vulkan/CommandBuffer.hpp
     src/Vulkan/Vulk.hpp
@@ -51,12 +45,14 @@ add_library(RxCore STATIC
     src/Window.hpp
     src/Events.h
     src/Events.cpp
+    src/Vulkan/VkBootstrap.cpp
+    #src/Vulkan/volk.c
 )
 
 target_compile_options(RxCore PUBLIC -DNOMINMAX)
 target_compile_options(RxCore PUBLIC -DUSE_OPTICK=1)
 target_compile_options(RxCore PUBLIC -DVK_USE_PLATFORM_WIN32_KHR)
-target_compile_options(RxCore PUBLIC -DVULKAN_HPP_NO_SPACESHIP_OPERATOR=1)
+#target_compile_options(RxCore PUBLIC -DVULKAN_HPP_NO_SPACESHIP_OPERATOR=1)
 
 if (MSVC)
     target_compile_options(RxCore PRIVATE /arch:AVX2 /W4 /WX /wd4100 /EHsc)
@@ -71,7 +67,7 @@ if (MSVC)
     endif()
 endif ()
 
-target_compile_options(RxCore PUBLIC -DVULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
+#target_compile_options(RxCore PUBLIC -DVULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 target_include_directories(RxCore PUBLIC "src")
 target_include_directories(RxCore INTERFACE "include")
 target_include_directories(RxCore PUBLIC ${Vulkan_INCLUDE_DIR})

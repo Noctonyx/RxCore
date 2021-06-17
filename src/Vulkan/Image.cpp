@@ -36,12 +36,12 @@ namespace RxCore
     }
 #if 0
     std::shared_ptr<ImageView> Image::createImageView(
-        vk::ImageViewType viewType,
-        vk::ImageAspectFlagBits aspect,
+        VkImageViewType viewType,
+        VkImageAspectFlagBits aspect,
         uint32_t baseArrayLayer,
         uint32_t layerCount)
     {
-        vk::ImageViewCreateInfo ivci;
+        VkImageViewCreateInfo ivci;
 
         ivci.setViewType(viewType)
             .setFormat(format_)
@@ -54,7 +54,7 @@ namespace RxCore
         return std::make_shared<ImageView>(device_, h, shared_from_this());
     }
 #endif
-    ImageView::ImageView(const Device * device, vk::ImageView handle)
+    ImageView::ImageView(const Device * device, VkImageView handle)
         : handle_(handle)
           , device_(device)
           //, image_(std::move(image))

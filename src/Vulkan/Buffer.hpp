@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // MIT License
 //
-// Copyright (c) 2021.  Shane Hyde
+// Copyright (c) 2021-2021.  Shane Hyde (shane@noctonyx.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,21 +40,21 @@ namespace RxCore
 
     public:
         Buffer(Device * device,
-               vk::Buffer handle,
+               VkBuffer handle,
                std::shared_ptr<Allocation> allocation,
-               vk::DeviceSize size);
+               VkDeviceSize size);
 
         virtual ~Buffer();
 
         RX_NO_COPY_NO_MOVE(Buffer)
 
-        [[nodiscard]] vk::Buffer handle() const
+        [[nodiscard]] VkBuffer handle() const
         {
             return handle_;
         }
 
         //[[nodiscard]] const std::shared_ptr<Allocation> & getMemory() const;
-        [[nodiscard]] vk::DeviceSize getSize() const;
+        [[nodiscard]] VkDeviceSize getSize() const;
 
         void map()
         {
@@ -66,12 +66,12 @@ namespace RxCore
             allocation_->unmap();
         }
 
-        void update(const void* data, vk::DeviceSize size) const
+        void update(const void* data, VkDeviceSize size) const
         {
             allocation_->update(data, size);
         }
 
-        void update(const void* data, vk::DeviceSize offset, vk::DeviceSize size) const
+        void update(const void* data, VkDeviceSize offset, VkDeviceSize size) const
         {
             allocation_->update(data, offset, size);
         }
@@ -84,16 +84,12 @@ namespace RxCore
         uint64_t getDeviceAddress() const
         {
             return device_->getBufferAddress(this);
-            //vk::BufferDeviceAddressInfo bdai{};
-            //bd/ai.setBuffer(handle_);
-
-            //return device_->getDevice().getBufferAddress(bdai);
         }
         
     private:
         Device * device_;
-        const vk::Buffer handle_ = nullptr;
-        vk::DeviceSize size_ = 0;
+        const VkBuffer handle_ = nullptr;
+        VkDeviceSize size_ = 0;
         std::shared_ptr<Allocation> allocation_;
     };
 }

@@ -25,6 +25,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "Vulk.hpp"
 #include "Util.h"
 
@@ -40,14 +42,14 @@ namespace RxCore
     public:
         Image(
             Device * device,
-            vk::Image image,
-            vk::Format format,
+            VkImage image,
+            VkFormat format,
             std::shared_ptr<Allocation> allocation,
-            vk::Extent3D extent)
+            VkExtent3D extent)
             : extent_(extent)
             , device_(device)
             , handle_(image)
-            , currentLayout_(vk::ImageLayout::eUndefined)
+            , currentLayout_(VK_IMAGE_LAYOUT_UNDEFINED)
             , format_(format)
             , allocation_(std::move(allocation)) {};
 
@@ -56,39 +58,39 @@ namespace RxCore
         RX_NO_COPY_NO_MOVE(Image);
 #if 0
         std::shared_ptr<ImageView> createImageView(
-            vk::ImageViewType viewType,
-            vk::ImageAspectFlagBits aspect,
+            VkImageViewType viewType,
+            VkImageAspectFlagBits aspect,
             uint32_t baseArrayLayer = 0,
             uint32_t layerCount = VK_REMAINING_ARRAY_LAYERS);
 #endif
-        vk::Image handle() const
+        VkImage handle() const
         {
             return handle_;
         }
 
-        //vk::Format getFormat() const { return format_;}
+        //VkFormat getFormat() const { return format_;}
 
     public:
-        vk::Extent3D extent_;
+        VkExtent3D extent_;
 
     private:
         Device * device_;
-        vk::Image handle_;
-        vk::ImageLayout currentLayout_;
-        vk::Format format_ = vk::Format::eUndefined;
-        vk::ImageType imageType_ = vk::ImageType::e2D;
+        VkImage handle_;
+        VkImageLayout currentLayout_;
+        VkFormat format_ = VK_FORMAT_UNDEFINED;
+        VkImageType imageType_ = VK_IMAGE_TYPE_2D;
         std::shared_ptr<Allocation> allocation_;
     };
 
     class ImageView
     {
     public:
-        ImageView(const Device * device, vk::ImageView handle);
+        ImageView(const Device * device, VkImageView handle);
         ~ImageView();
 
         RX_NO_COPY_NO_MOVE(ImageView);
 
-        vk::ImageView handle_;
+        VkImageView handle_;
         //std::shared_ptr<Image> getImage() const;
 
     private:

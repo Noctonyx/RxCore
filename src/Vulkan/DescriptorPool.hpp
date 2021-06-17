@@ -17,7 +17,7 @@ namespace RxCore
 #if 0
     struct DescriptorPoolTemplate
     {
-        DescriptorPoolTemplate(const std::vector<vk::DescriptorPoolSize> & poolSizes, uint32_t max)
+        DescriptorPoolTemplate(const std::vector<VkDescriptorPoolSize> & poolSizes, uint32_t max)
             : poolSizes(poolSizes)
             , max(max)
         {
@@ -33,7 +33,7 @@ namespace RxCore
             hash = h.get();
         }
 
-        std::vector<vk::DescriptorPoolSize> poolSizes;
+        std::vector<VkDescriptorPoolSize> poolSizes;
         uint32_t max;
         RxUtil::Hash hash;
     };
@@ -41,9 +41,9 @@ namespace RxCore
     class DescriptorPool : public std::enable_shared_from_this<DescriptorPool>
     {
     public:
-        explicit DescriptorPool(Device * device, vk::DescriptorPool new_handle);
+        explicit DescriptorPool(Device * device, VkDescriptorPool new_handle);
 
-        DescriptorPool(vk::Device device, const DescriptorPool & other) = delete;
+        DescriptorPool(VkDevice device, const DescriptorPool & other) = delete;
         //DescriptorPool(DescriptorPool&& other) = delete;
         DescriptorPool & operator=(const DescriptorPool & other) = delete;
         //DescriptorPool& operator=(DescriptorPool&& other) = delete;
@@ -53,13 +53,13 @@ namespace RxCore
             device_->destroyDescriptorPool(this);
         };
 
-        std::shared_ptr<DescriptorSet> allocateDescriptorSet(vk::DescriptorSetLayout layout);
+        std::shared_ptr<DescriptorSet> allocateDescriptorSet(VkDescriptorSetLayout layout);
         std::shared_ptr<DescriptorSet> allocateDescriptorSet(
-            vk::DescriptorSetLayout layout,
+            VkDescriptorSetLayout layout,
             const std::vector<uint32_t> & counts);
-        void handBackDescriptorSet(vk::DescriptorSet descriptor_set);
+        void handBackDescriptorSet(VkDescriptorSet descriptor_set);
 
-        const vk::DescriptorPool handle;
+        const VkDescriptorPool handle;
     private:
         Device * device_;
     };
@@ -71,12 +71,12 @@ namespace RxCore
         //DescriptorPoolGroup();
 
         std::shared_ptr<DescriptorPool> descriptorPool;
-        std::vector<vk::DescriptorPoolSize> poolSizes;
+        std::vector<VkDescriptorPoolSize> poolSizes;
         uint32_t max;
 
-        std::shared_ptr<DescriptorSet> getDescriptorSet(vk::DescriptorSetLayout layout);
+        std::shared_ptr<DescriptorSet> getDescriptorSet(VkDescriptorSetLayout layout);
         std::shared_ptr<DescriptorSet> getDescriptorSet(
-            vk::DescriptorSetLayout layout,
+            VkDescriptorSetLayout layout,
             const std::vector<uint32_t> & counts);
     };
 #endif

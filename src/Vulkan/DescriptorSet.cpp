@@ -36,9 +36,9 @@ namespace RxCore
     DescriptorSet::DescriptorSet(
         Device * device,
         std::shared_ptr<DescriptorPool> descriptorPool,
-        vk::DescriptorSet newHandle
+        VkDescriptorSet newHandle
     )
-    //: VulkanResource<DescriptorSet, vk::DescriptorSet>(context)
+    //: VulkanResource<DescriptorSet, VkDescriptorSet>(context)
         : handle(newHandle)
         , device_(device)
         , descriptorPool_(std::move(descriptorPool)) {}
@@ -51,7 +51,7 @@ namespace RxCore
 
     void DescriptorSet::updateDescriptor(
         uint32_t binding,
-        vk::DescriptorType type,
+        VkDescriptorType type,
         std::shared_ptr<Buffer> buffer,
         const uint32_t range,
         const uint32_t offset
@@ -59,112 +59,90 @@ namespace RxCore
     {
         offsets_.resize(std::max(binding + 1, static_cast<uint32_t>(offsets_.size())));
 
-        vk::DescriptorBufferInfo dbi{buffer->handle(), 0, range == 0 ? buffer->size_ : range};
+        VkDescriptorBufferInfo dbi{buffer->handle(), 0, range == 0 ? buffer->size_ : range};
 
-        std::vector<vk::WriteDescriptorSet> wds{
-            {handle, binding, {}, 1, type, {}, &dbi},
-        };
+        std::vector<VkWriteDescriptorSet> wds(1);
+
+        wds[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        wds[0].dstSet = handle;
+        wds[0].dstBinding = binding;
+        wds[0].descriptorCount = 1;
+        wds[0].descriptorType = type;
+        wds[0].pBufferInfo = &dbi;
+
         buffers_.insert_or_assign(binding, std::move(buffer));
-        //buffers_.push_back(buffer);
 
-        if (type == vk::DescriptorType::eUniformBufferDynamic || type == vk::DescriptorType::eStorageBufferDynamic) {
+        if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ||
+            type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC) {
             offsets_[binding] = offset;
         } else {
             offsets_[binding] = std::nullopt;
         }
-        device_->getDevice().updateDescriptorSets(
-            static_cast<uint32_t>(wds.size()),
-            wds.data(),
-            0,
-            nullptr
-        );
+        vkUpdateDescriptorSets(device_->getDevice(), static_cast<uint32_t>(wds.size()), wds.data(),
+                               0, nullptr);
     }
 
     // TODO: fix this
     void DescriptorSet::updateDescriptor(
         uint32_t binding,
-        vk::DescriptorType type,
+        VkDescriptorType type,
         const std::shared_ptr<Image> & image,
-        vk::Sampler sampler
+        VkSampler sampler
     )
     {
         offsets_.resize(std::max(binding + 1, static_cast<uint32_t>(offsets_.size())));
+
         auto image_view = device_->createImageView(
             image,
-            vk::ImageViewType::e2D,
-            vk::ImageAspectFlagBits::eColor, 0, 1);
+            VK_IMAGE_VIEW_TYPE_2D,
+            VK_IMAGE_ASPECT_COLOR_BIT, 0, 1);
 
         if (imageViews_.contains(binding)) {
             imageViews_.erase(binding);
         }
         imageViews_.emplace(binding, std::vector<std::shared_ptr<ImageView>>{image_view});
-//        if (imageViews_.size() < binding + 1) {
-        //          imageViews_.resize(binding + 1);
-//        }
-        //      imageViews_[binding] = image_view;
-#if 0
-        if (samplers_.size() < binding + 1) {
-            samplers_.resize(binding + 1);
-        }
-        samplers_[binding] = sampler;
-#endif
-//        if (images_.size() < binding + 1) {
-        //          images_.resize(binding + 1);
-        //    }
-//        images_[binding] = image;
 
-        vk::DescriptorImageInfo dii = {
-            sampler, image_view->handle_, vk::ImageLayout::eShaderReadOnlyOptimal
+        VkDescriptorImageInfo dii = {
+            sampler, image_view->handle_, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         };
-        vk::WriteDescriptorSet wds;
-        wds.setDescriptorType(type)
-           .setDescriptorCount(1)
-           .setDstArrayElement(0)
-           .setDstSet(handle)
-           .setDstBinding(binding)
-           .setPImageInfo(&dii);
+        VkWriteDescriptorSet wds{};
+        wds.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        wds.descriptorType = type;
+        wds.descriptorCount = 1;
+        wds.dstArrayElement = 0;
+        wds.dstSet = handle;
+        wds.dstBinding = binding;
+        wds.pImageInfo = &dii;
 
-        device_->getDevice().updateDescriptorSets({wds}, {});
+        vkUpdateDescriptorSets(device_->getDevice(), 1, &wds, 0, nullptr);
+        //        device_->getDevice().updateDescriptorSets({wds}, {});
     }
 
     void DescriptorSet::updateDescriptor(
         uint32_t binding,
-        vk::DescriptorType type,
+        VkDescriptorType type,
         std::shared_ptr<ImageView> imageView,
-        vk::ImageLayout layout,
-        vk::Sampler sampler)
+        VkImageLayout layout,
+        VkSampler sampler)
     {
         offsets_.resize(std::max(binding + 1, static_cast<uint32_t>(offsets_.size())));
-        vk::DescriptorImageInfo dii = {
+        VkDescriptorImageInfo dii = {
             sampler, imageView->handle_, layout
         };
         if (imageViews_.contains(binding)) {
             imageViews_.erase(binding);
         }
         imageViews_.emplace(binding, std::vector<std::shared_ptr<ImageView>>{imageView});
-//        if (images_.size() < binding + 1) {
-        //          images_.resize(binding + 1);
-        //    }
-        //  images_[binding] = std::move(imageView->getImage());
 
-        //if (imageViews_.size() < binding + 1) {
-//            imageViews_.resize(binding + 1);
-//        }
-        //      imageViews_[binding] = std::move(imageView);
-#if 0
-        if (samplers_.size() < binding + 1) {
-            samplers_.resize(binding + 1);
-        }
-        samplers_[binding] = std::move(sampler);
-#endif
-        vk::WriteDescriptorSet wds;
-        wds.setDescriptorType(type)
-           .setDescriptorCount(1)
-           .setDstArrayElement(0)
-           .setDstSet(handle)
-           .setDstBinding(binding)
-           .setPImageInfo(&dii);
-        device_->getDevice().updateDescriptorSets({wds}, {});
+        VkWriteDescriptorSet wds;
+        wds.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        wds.descriptorType = type;
+        wds.descriptorCount = 1;
+        wds.dstSet = handle;
+        wds.dstBinding = binding;
+        wds.pImageInfo = &dii;
+
+        vkUpdateDescriptorSets(device_->getDevice(), 1, &wds, 0, nullptr);
     }
 #if 0
     std::shared_ptr<ImageView> DescriptorSet::getBoundImageView(uint32_t binding) const
@@ -185,45 +163,45 @@ namespace RxCore
 
     void DescriptorSet::updateDescriptor(
         uint32_t binding,
-        vk::DescriptorType type,
+        VkDescriptorType type,
         const std::vector<CombinedSampler> & samplerViews)
     {
-//        vk::DescriptorImageInfo dii = {
-        //          sampler->handle, imageView->handle, layout
-        //    };
         if (samplerViews.size() == 0) {
             return;
         }
         offsets_.resize(std::max(binding + 1, static_cast<uint32_t>(offsets_.size())));
 
-        std::vector<vk::DescriptorImageInfo> dii = {};
-        for (const auto & sampler_view : samplerViews) {
-            dii.emplace_back(
+        std::vector<VkDescriptorImageInfo> dii = {};
+        for (const auto & sampler_view: samplerViews) {
+            dii.push_back({
                 sampler_view.sampler,
                 sampler_view.imageView->handle_,
-                vk::ImageLayout::eShaderReadOnlyOptimal);
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
         }
         std::vector<std::shared_ptr<ImageView>> iviews(samplerViews.size());
         std::transform(
             samplerViews.cbegin(), samplerViews.cend(),
             iviews.begin(),
-            [](const CombinedSampler & i) -> std::shared_ptr<ImageView> { return i.imageView; });
+            [](const CombinedSampler & i) -> std::shared_ptr<ImageView>
+            {
+                return i.imageView;
+            });
 
         if (imageViews_.contains(binding)) {
             imageViews_.erase(binding);
         }
         imageViews_.emplace(binding, iviews);
-        //std::vector<vk::DescriptorImageInfo> dii;
+        //std::vector<VkDescriptorImageInfo> dii;
 
-        vk::WriteDescriptorSet wds;
-        wds.setDescriptorType(type)
-           .setDescriptorCount(static_cast<uint32_t>( dii.size()))
-           .setDstArrayElement(0)
-           .setDstSet(handle)
-           .setDstBinding(binding)
-           .setImageInfo(dii);
+        VkWriteDescriptorSet wds{};
+        wds.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        wds.descriptorType = type;
+        wds.descriptorCount = static_cast<uint32_t>(dii.size());
+        wds.dstSet = handle;
+        wds.dstBinding = binding;
+        wds.pImageInfo = dii.data();
 
-        device_->getDevice().updateDescriptorSets({wds}, {});
+        vkUpdateDescriptorSets(device_->getDevice(), 1, &wds, 0, nullptr);
     }
 
     std::vector<uint32_t> DescriptorSet::getOffsets() const

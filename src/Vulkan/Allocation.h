@@ -33,13 +33,13 @@ namespace RxCore
             }
         }
 
-        void update(const void * data, vk::DeviceSize size) const
+        void update(const void * data, VkDeviceSize size) const
         {
             assert(mappedPtr_);
             (void) memcpy(mappedPtr_, data, size);
         }
 
-        void update(const void * data, vk::DeviceSize offset, vk::DeviceSize size) const
+        void update(const void * data, VkDeviceSize offset, VkDeviceSize size) const
         {
             assert(mappedPtr_);
             (void) memcpy(static_cast<uint8_t *>(mappedPtr_) + offset, data, size);

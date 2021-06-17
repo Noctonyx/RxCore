@@ -8,7 +8,7 @@ namespace RxCore
     class FrameBuffer
     {
     public:
-        FrameBuffer(Device * device, const vk::Framebuffer & handle)
+        FrameBuffer(Device * device, const VkFramebuffer & handle)
             : device_(device)
               , handle_(handle)
         {}
@@ -23,14 +23,14 @@ namespace RxCore
 
         ~FrameBuffer()
         {
-            device_->getDevice().destroyFramebuffer(handle_);
+            vkDestroyFramebuffer(device_->getDevice(), handle_, nullptr);
         }
 
-        [[nodiscard]] vk::Framebuffer Handle() const
+        [[nodiscard]] VkFramebuffer Handle() const
         { return handle_; }
 
     private:
         Device * device_;
-        vk::Framebuffer handle_;
+        VkFramebuffer handle_;
     };
 }
